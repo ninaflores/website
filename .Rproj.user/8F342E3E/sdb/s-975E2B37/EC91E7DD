@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "baseurl = \"/\"\nlanguageCode = \"en-US\"\ntitle = \"Nina Flores\"\n# Enable comments by entering your Disqus shortname\ndisqusShortname = \"\"\n# Enable Google Analytics by entering your tracking code\ngoogleAnalytics = \"\"\ntheme = \"hugo-sustain\"\n\n[permalinks]\n  post = \"/:year/:month/:day/:slug\"\n\n[params]\n  avatar = \"profile.png\"\n  author = \"Nina Flores\"\n  description = \"Describe your website\"\n\n  # Custom assets can be linked with their paths relative to static/\n  custom_css = []\n  custom_js  = []\n\n[params.social]\n  Github        = \"ninaflores\"\n  Email         = \"email@example.com\"\n  Twitter       = \"username\"\n  LinkedIn      = \"username\"\n  Stackoverflow = \"username\"\n  Medium        = \"username\"\n  Telegram      = \"username\"\n\n## Main Menu\n[[menu.main]]\n  name = \"blog\"\n  weight = 100\n  identifier = \"blog\"\n  url = \"/blog/\"\n[[menu.main]]\n  name = \"projects\"\n  identifier = \"projects\"\n  weight = 200\n  url = \"/project1/\"\n[[menu.main]]\n  name = \"resume\"\n  identifier = \"resume\"\n  weight = 300\n  url = \"/resume/\"\n",
+    "created" : 1575499757971.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2931952354",
+    "id" : "EC91E7DD",
+    "lastKnownWriteTime" : 1575567522,
+    "last_content_update" : 1575567522457,
+    "path" : "~/Desktop/website/config.toml",
+    "project_path" : "config.toml",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "text"
+}
