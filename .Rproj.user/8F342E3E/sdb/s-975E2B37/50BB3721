@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "name: Projects\nsource:\n  - icon: fa fa-github\n    description: An Exploratory Data Analysis on IMDb movie data.\n\n  - icon: fa fa-github\n    description: An eripuit phaedrum qui, nec facer splendide ex, vel ea assum facilisi convenire. Te his neglegentur consectetuer.\n\n  ",
+    "created" : 1575574004068.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4141596064",
+    "id" : "50BB3721",
+    "lastKnownWriteTime" : 1575580623,
+    "last_content_update" : 1575580623254,
+    "path" : "~/Desktop/website/data/projects.yml",
+    "project_path" : "data/projects.yml",
+    "properties" : {
+    },
+    "relative_order" : 8,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "yaml"
+}

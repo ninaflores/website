@@ -11,7 +11,7 @@ theme = "hugo-sustain"
   post = "/:year/:month/:day/:slug"
 
 [params]
-  avatar = "profile.png"
+  avatar = "profilepic.png"
   author = "Nina Flores"
   description = "Describe your website"
 
@@ -21,9 +21,9 @@ theme = "hugo-sustain"
 
 [params.social]
   Github        = "ninaflores"
-  Email         = "email@example.com"
-  Twitter       = "username"
-  LinkedIn      = "username"
+  Email         = "nina.m.flores@icloud.com"
+  Twitter       = "ninaflores4"
+  Instagram    = "nina_flores"
   Stackoverflow = "username"
   Medium        = "username"
   Telegram      = "username"
@@ -38,7 +38,7 @@ theme = "hugo-sustain"
   name = "projects"
   identifier = "projects"
   weight = 200
-  url = "/project1/"
+  url = "/Projects/"
 [[menu.main]]
   name = "resume"
   identifier = "resume"
