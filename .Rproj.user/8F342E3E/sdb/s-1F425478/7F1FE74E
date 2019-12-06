@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1575608571959.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "7F1FE74E",
+    "lastKnownWriteTime" : 8241992348190597484,
+    "last_content_update" : 1575608571959,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "386491FD",
+        "caption" : "Black_parent_survey_for_Nina_2_1_",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=Black_parent_survey_for_Nina_2_1_&cache_key=386491FD",
+        "displayedObservations" : "576",
+        "environment" : "",
+        "object" : "Black_parent_survey_for_Nina_2_1_",
+        "preview" : "0",
+        "totalObservations" : "576",
+        "variables" : "378"
+    },
+    "relative_order" : 17,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

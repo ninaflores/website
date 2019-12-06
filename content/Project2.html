@@ -1,0 +1,1123 @@
+---
+title: "Modeling Project"
+author: "SDS348 Fall 2019"
+date: ""
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+
+<div id="nina-flores-nmf538" class="section level2">
+<h2>Nina Flores, nmf538</h2>
+<hr />
+<p>This data comes from a survey that Dr. Fatima Varner’s African American Resilience in Context lab in the Department of Human Development and Family Sciences conducted. The survey has responses from 324 black mothers and 252 black fathers with an adolescent child between 11-18. The survey had over 300 questions targeting various social constructs covering topics of school involvement, parenting behaviors, racial concerns, and racial discrimination. The variables of interest for this project include: ‘PA_EDU’, ‘PART_EDU’, ‘MARSTAT’, ‘TOTIVP’, ‘vicarious’, ‘pdisc’, ‘cdisc’, ‘TOTRCON’, ‘totbpi’, ‘NEIGHCOMP’, ‘JOBCOMP’, ‘SCHCOMP’, ‘TOTINC’, ‘recodedgpa’. ‘PA_EDU’ and ‘PART_EDU’ refer to the parent and partner’s highest level of education received. ‘MARSTAT’ is a parent’s marital status. ‘TOTIVP’ stands for ‘involved-vigilant parenting.’ This section assesses aspects of parents’ behavioral control of their children, and their responsiveness as well. ‘Vicarious’ assesses indirect experiences of discrimination that the parent received. ‘Pdisc’ measures the personal discrimination that the parent experienced and ‘cdisc’ asseses the child’s experiences with racial discrimination. ‘TOTRCON’ is a measure of the racial concerns that a parent has for their child through questions like “How often do you worry your child will get fewer job interviews because of his or her race?” ‘totbpi’ stands for the ‘behavior problem index’ and dives into a child’s tendencies towards depression, anxiety, and peer victimization. ‘NEIGHCOMP,’ ‘JOBCOMP’,and ‘SCHCOMP’ all measure the “blackness of different spaces of the child or parent’s day-to-day experience by asking about the racial compostion and demographics of the neighborhood, work, and school.</p>
+<pre class="r"><code>library(tidyverse)
+library(dbplyr)
+library(MASS)
+library(lmtest)
+library(plotROC)
+
+data &lt;- read.csv(&quot;~/Downloads/Black parent survey for Nina 2 (1).csv&quot;)
+
+
+# removing the idk category so it doesn&#39;t skew results also
+# removed the ones with 1-3 observations
+datanoidk &lt;- data %&gt;% filter(Q297 != 8)
+datano1 &lt;- datanoidk %&gt;% filter(Q297 != 1)
+datano2 &lt;- datano1 %&gt;% filter(Q297 != 2)
+datano3 &lt;- datano2 %&gt;% filter(Q297 != 3)
+
+# recode income variable into means for more meaningful
+# interpretations
+datz &lt;- datano3 %&gt;% mutate(recodedincome = recode(TOTINC, 5000, 
+    15000, 25000, 35000, 45000, 55000, 65000, 75000, 85000, 95000, 
+    105000, 115000, 125000, 135000, 145000, 155000, .default = NULL, 
+    .missing = NULL))
+
+
+
+datag &lt;- datz %&gt;% filter(Q297 != 1)
+datagp &lt;- datag %&gt;% filter(Q297 != 2)
+datagpa &lt;- datagp %&gt;% filter(Q297 != 3)
+datagpa2 &lt;- datagpa %&gt;% filter(Q297 != 8)
+
+
+datagpa2 &lt;- datagpa2 %&gt;% mutate(recodedgpa = recode(Q297, 1, 
+    1.25, 1.75, 2.25, 2.75, 3.25, 3.75, .default = NULL, .missing = NULL))
+surveydata &lt;- datagpa2
+surveydata &lt;- surveydata %&gt;% dplyr::select(PA_GEN, PA_AGE, LIVEWT, 
+    CH_GEN, PA_EDU, PART_EDU, MARSTAT, TOTIVP, CRPR_TOT, RAC_SOC, 
+    CUL_SOC, MMRI, vicarious, pdisc, cdisc, TOTRCON, Q232, Q233, 
+    totbpi, NEIGHCOMP, JOBCOMP, SCHCOMP, recodedincome, recodedgpa, 
+    COUNTRY)
+
+
+
+# lets see what these look like
+surveydata %&gt;% group_by(recodedgpa) %&gt;% drop_na(pdisc, cdisc, 
+    TOTIVP, TOTRCON, totbpi, recodedincome, vicarious, RAC_SOC, 
+    CUL_SOC, MMRI, ) %&gt;% summarize(n = n(), mean(recodedincome), 
+    mean(pdisc), mean(cdisc), mean(TOTIVP), mean(TOTRCON), mean(totbpi)) %&gt;% 
+    glimpse()</code></pre>
+<pre><code>## Observations: 4
+## Variables: 8
+## $ recodedgpa            &lt;dbl&gt; 2.25, 2.75, 3.25, 3.75
+## $ n                     &lt;int&gt; 32, 60, 170, 231
+## $ `mean(recodedincome)` &lt;dbl&gt; 54375.00, 65000.00, 67411.76, 73961.04
+## $ `mean(pdisc)`         &lt;dbl&gt; 3.093403, 3.121481, 2.427712, 2.579461
+## $ `mean(cdisc)`         &lt;dbl&gt; 2.764236, 2.581667, 2.104706, 2.100337
+## $ `mean(TOTIVP)`        &lt;dbl&gt; 3.259046, 3.098904, 3.078196, 3.059698
+## $ `mean(TOTRCON)`       &lt;dbl&gt; 2.770833, 2.670076, 2.615553, 2.523864
+## $ `mean(totbpi)`        &lt;dbl&gt; 16.500000, 15.933333, 7.811765, 5.766234</code></pre>
+<p>I was interested in exploring how several variables differ among the children with different grade point averages. Here, the mean income, personal discrimination of the parent, child discrimination, involved vigilant parenting, racial concerns and behavior problem index scores are separated by GPA classifications where the lowest group is from 2-2.5, the next group is 2.5-3, then 3-3.5 and finally 3.5-4.</p>
+<pre class="r"><code>library(mvnormtest)
+
+# Normality-- fails this assumption.
+check &lt;- surveydata %&gt;% dplyr::select(pdisc, cdisc, recodedincome, 
+    totbpi, vicarious, TOTRCON, TOTIVP, RAC_SOC, CUL_SOC, MMRI, 
+    recodedgpa)
+C &lt;- t(check[1:100, 1:10])
+mshapiro.test(C)</code></pre>
+<pre><code>## 
+##  Shapiro-Wilk normality test
+## 
+## data:  Z
+## W = 0.87699, p-value = 1.356e-07</code></pre>
+<pre class="r"><code># variance in each of the groups, use .001 since very
+# sensitive test-- cdisc fails.
+bartlett.test(check$cdisc, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$cdisc and check$recodedgpa
+## Bartlett&#39;s K-squared = 18.003, df = 3, p-value = 0.0004392</code></pre>
+<pre class="r"><code>bartlett.test(check$pdisc, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$pdisc and check$recodedgpa
+## Bartlett&#39;s K-squared = 12.867, df = 3, p-value = 0.004934</code></pre>
+<pre class="r"><code>bartlett.test(check$recodedincome, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$recodedincome and check$recodedgpa
+## Bartlett&#39;s K-squared = 0.37069, df = 3, p-value = 0.9462</code></pre>
+<pre class="r"><code>bartlett.test(check$totbpi, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$totbpi and check$recodedgpa
+## Bartlett&#39;s K-squared = 50.144, df = 3, p-value = 7.446e-11</code></pre>
+<pre class="r"><code>bartlett.test(check$vicarious, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$vicarious and check$recodedgpa
+## Bartlett&#39;s K-squared = 2.1343, df = 3, p-value = 0.545</code></pre>
+<pre class="r"><code>bartlett.test(check$TOTRCON, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$TOTRCON and check$recodedgpa
+## Bartlett&#39;s K-squared = 3.4899, df = 3, p-value = 0.3221</code></pre>
+<pre class="r"><code>bartlett.test(check$TOTIVP, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$TOTIVP and check$recodedgpa
+## Bartlett&#39;s K-squared = 11.889, df = 3, p-value = 0.007773</code></pre>
+<pre class="r"><code>bartlett.test(check$RAC_SOC, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$RAC_SOC and check$recodedgpa
+## Bartlett&#39;s K-squared = 2.3791, df = 3, p-value = 0.4975</code></pre>
+<pre class="r"><code>bartlett.test(check$CUL_SOC, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$CUL_SOC and check$recodedgpa
+## Bartlett&#39;s K-squared = 0.53857, df = 3, p-value = 0.9103</code></pre>
+<pre class="r"><code>bartlett.test(check$MMRI, check$recodedgpa)</code></pre>
+<pre><code>## 
+##  Bartlett test of homogeneity of variances
+## 
+## data:  check$MMRI and check$recodedgpa
+## Bartlett&#39;s K-squared = 5.4398, df = 3, p-value = 0.1423</code></pre>
+<pre class="r"><code># manova
+
+
+man &lt;- manova(cbind(pdisc, cdisc, vicarious, TOTRCON, TOTIVP, 
+    totbpi, recodedincome, RAC_SOC, CUL_SOC, MMRI) ~ recodedgpa, 
+    data = surveydata)
+
+summary(man)</code></pre>
+<pre><code>##             Df  Pillai approx F num Df den Df    Pr(&gt;F)    
+## recodedgpa   1 0.18118   10.665     10    482 &lt; 2.2e-16 ***
+## Residuals  491                                             
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>summary.aov(man)</code></pre>
+<pre><code>##  Response pdisc :
+##              Df Sum Sq Mean Sq F value   Pr(&gt;F)   
+## recodedgpa    1  12.54 12.5376  9.3406 0.002363 **
+## Residuals   491 659.05  1.3423                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response cdisc :
+##              Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## recodedgpa    1  17.16 17.1595  13.703 0.0002384 ***
+## Residuals   491 614.87  1.2523                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response vicarious :
+##              Df Sum Sq Mean Sq F value Pr(&gt;F)
+## recodedgpa    1   1.31 1.30812  1.6361 0.2015
+## Residuals   491 392.56 0.79951               
+## 
+##  Response TOTRCON :
+##              Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+## recodedgpa    1   2.52 2.52000  2.7607 0.09725 .
+## Residuals   491 448.19 0.91282                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response TOTIVP :
+##              Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+## recodedgpa    1  0.791 0.79053  6.0662 0.01412 *
+## Residuals   491 63.985 0.13032                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response totbpi :
+##              Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+## recodedgpa    1   6303  6302.9  86.041 &lt; 2.2e-16 ***
+## Residuals   491  35968    73.3                      
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response recodedincome :
+##              Df     Sum Sq    Mean Sq F value   Pr(&gt;F)   
+## recodedgpa    1 1.3199e+10 1.3199e+10  6.7385 0.009718 **
+## Residuals   491 9.6171e+11 1.9587e+09                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response RAC_SOC :
+##              Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+## recodedgpa    1   3.49  3.4940  4.3717 0.03705 *
+## Residuals   491 392.42  0.7992                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response CUL_SOC :
+##              Df Sum Sq Mean Sq F value   Pr(&gt;F)   
+## recodedgpa    1  10.06 10.0554  10.852 0.001058 **
+## Residuals   491 454.94  0.9266                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+##  Response MMRI :
+##              Df Sum Sq Mean Sq F value  Pr(&gt;F)  
+## recodedgpa    1    3.0  3.0004  4.5371 0.03367 *
+## Residuals   491  324.7  0.6613                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## 3 observations deleted due to missingness</code></pre>
+<pre class="r"><code># pdisc, cdisc, TOTIVP, totbpi, income, RAC_SOC, CUL_SOC and
+# MMRI all significant-- post hocs for each
+pairwise.t.test(surveydata$pdisc, surveydata$recodedgpa, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  surveydata$pdisc and surveydata$recodedgpa 
+## 
+##      2.25    2.75    3.25   
+## 2.75 0.91173 -       -      
+## 3.25 0.00396 0.00012 -      
+## 3.75 0.01887 0.00130 0.26257
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(surveydata$cdisc, surveydata$recodedgpa, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  surveydata$cdisc and surveydata$recodedgpa 
+## 
+##      2.25   2.75   3.25  
+## 2.75 0.4579 -      -     
+## 3.25 0.0028 0.0058 -     
+## 3.75 0.0018 0.0032 0.8961
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(surveydata$TOTIVP, surveydata$recodedgpa, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  surveydata$TOTIVP and surveydata$recodedgpa 
+## 
+##      2.25   2.75   3.25  
+## 2.75 0.0428 -      -     
+## 3.25 0.0092 0.6955 -     
+## 3.75 0.0033 0.4399 0.5979
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(surveydata$recodedincome, surveydata$recodedgpa, 
+    p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  surveydata$recodedincome and surveydata$recodedgpa 
+## 
+##      2.25 2.75 3.25
+## 2.75 0.28 -    -   
+## 3.25 0.10 0.61 -   
+## 3.75 0.02 0.16 0.21
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(surveydata$RAC_SOC, surveydata$recodedgpa, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  surveydata$RAC_SOC and surveydata$recodedgpa 
+## 
+##      2.25  2.75  3.25 
+## 2.75 0.350 -     -    
+## 3.25 0.093 0.428 -    
+## 3.75 0.043 0.218 0.555
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(surveydata$CUL_SOC, surveydata$recodedgpa, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  surveydata$CUL_SOC and surveydata$recodedgpa 
+## 
+##      2.25   2.75   3.25  
+## 2.75 0.0790 -      -     
+## 3.25 0.0032 0.2165 -     
+## 3.75 0.0008 0.0841 0.5193
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(surveydata$totbpi, surveydata$recodedgpa, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  surveydata$totbpi and surveydata$recodedgpa 
+## 
+##      2.25    2.75    3.25 
+## 2.75 0.760   -       -    
+## 3.25 1.3e-07 3.1e-10 -    
+## 3.75 5.7e-11 1.3e-15 0.022
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(surveydata$MMRI, surveydata$recodedgpa, p.adj = &quot;none&quot;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  surveydata$MMRI and surveydata$recodedgpa 
+## 
+##      2.25   2.75   3.25  
+## 2.75 0.0753 -      -     
+## 3.25 0.0056 0.3307 -     
+## 3.75 0.0080 0.4403 0.7347
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code># Calculate number of tests run: 1 manova, 10 anovas, each
+# pairwise test runs 6, so 8*6 = 48, so 48+10+1 = 59 tests
+# total
+
+# chance of type 1 error
+1 - ((0.95)^59)</code></pre>
+<pre><code>## [1] 0.9515055</code></pre>
+<pre class="r"><code># So we must use correction
+0.05/59  #new alpha</code></pre>
+<pre><code>## [1] 0.0008474576</code></pre>
+<pre class="r"><code>check %&gt;% ggplot(aes(recodedgpa, totbpi, fill = recodedgpa)) + 
+    geom_bar(stat = &quot;summary&quot;) + geom_errorbar(stat = &quot;summary&quot;) + 
+    coord_flip() + ylab(&quot;total bpi score&quot;) + theme(legend.position = &quot;none&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-2-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>check %&gt;% ggplot(aes(recodedgpa, cdisc, fill = recodedgpa)) + 
+    geom_bar(stat = &quot;summary&quot;) + geom_errorbar(stat = &quot;summary&quot;) + 
+    coord_flip() + ylab(&quot;cdisc score&quot;) + theme(legend.position = &quot;none&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-2-2.png" width="768" style="display: block; margin: auto;" /> Null Hypothesis: For the ten measures, means of each GPA grouping are equal. Alternative: For at least one dependent variable, at least one GPA grouping mean is different.</p>
+<p>In order to test whether the mean income, personal discrimination of the parent, child discrimination, vicarious discrimination, involved vigilant parenting, racial concerns, racial socialization scores, cultural socialization scores, racial identity score, and behavior problem index scores differ across GPA categories, I ran a multivariate analysis of variance, or MANOVA. The MANOVA found that these groups did significantly differ on the 10 measures (Pillai trace = 0.18118, F(1,491)= 10.665, p&lt; 2.2e-16). Univariate analyses of variance (ANOVAs) for each dependent variable were conducted as follow-up tests to the MANOVA, and using the Bonferroni method for controlling the Type I error, the univariate ANOVA for problem behaviors (F(1,491)= 86.041, p &lt; 2.2e-16)) and child discrimination (F(1,491)= 13.703, p= 0.0002384)) were significant.</p>
+<p>Post hoc analysis was performed, conducting pairwise comparisons to determine which GPA groups differed in ‘totbpi’, and ‘cdisc’. After adjusting for multiple comparisons (bonferroni), due to the type 1 error rate of 0.9515055, the total bpi still significantly differed between the 2.0- 2.5 group to the 3.0-3.5 and 3.5-4.0 groups and the 2.5-3.0 group significantly differed from the 3.0-3.5 and 3.5-4.0 groups as well.</p>
+<p>The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc.</p>
+<pre class="r"><code># Randomization Test Do mothers or fathers experience more
+# racial discrimination? Male = 1, Female = 2
+Mother &lt;- surveydata %&gt;% filter(PA_GEN == 2)
+Father &lt;- surveydata %&gt;% filter(PA_GEN == 1)
+
+
+hist(Mother$pdisc)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist(Father$pdisc)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># the group difference
+
+
+mean(Mother$pdisc, na.rm = T) - mean(Father$pdisc, na.rm = T)</code></pre>
+<pre><code>## [1] -0.2481328</code></pre>
+<pre class="r"><code>surveydataMF &lt;- surveydata %&gt;% drop_na(pdisc)
+
+# randomization!
+set.seed(348)
+rand_distribution &lt;- vector()
+for (i in 1:5000) {
+    new &lt;- data.frame(pdisc = sample(surveydataMF$pdisc), gender = surveydataMF$PA_GEN)
+    rand_distribution[i] &lt;- mean(new[new$gender == &quot;2&quot;, ]$pdisc) - 
+        mean(new[new$gender == &quot;1&quot;, ]$pdisc)
+}
+
+# create the histogram of the distribution with our test
+# statistic
+{
+    hist(rand_distribution, main = &quot;&quot;, ylab = &quot;&quot;)
+    abline(v = -0.2335992, col = &quot;red&quot;)
+}</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-3-3.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mean(rand_distribution &gt; abs(-0.2335992)) * 2  #pvalue &lt; alpha, significant</code></pre>
+<pre><code>## [1] 0.0272</code></pre>
+<pre class="r"><code># comparison to ttest
+t.test(pdisc ~ PA_GEN, data = surveydata)</code></pre>
+<pre><code>## 
+##  Welch Two Sample t-test
+## 
+## data:  pdisc by PA_GEN
+## t = 2.3326, df = 466.75, p-value = 0.02009
+## alternative hypothesis: true difference in means is not equal to 0
+## 95 percent confidence interval:
+##  0.03909937 0.45716619
+## sample estimates:
+## mean in group 1 mean in group 2 
+##        2.765894        2.517761</code></pre>
+<p>Do mothers or fathers experience more personal discrimination on average? Null Hypothesis: There is no difference in the average rate of personal discrimination based on gender. Alternative Hypothesis: Mothers and fathers receive different amounts of personal discrimination on average. Assumptions for the independent t-test were violated, so we use randomization. The actual mean difference between the groups was found to be -0.2335992 (when subtracting fathers from mothers). After running the randomization test, a p-value of.0308 was found and can be visualized by the two red lines on the distibution above. Since the p-value is less than our alpha of .05, we can conclude that there is a significant difference in the amount of personal discrimination that mothers and fathers face. Fathers face significantly more discrimination when compared to mothers.</p>
+<pre class="r"><code>surveydata &lt;- surveydata
+surveydata$SCHCOMP &lt;- factor(surveydata$SCHCOMP)
+surveydata$cdisc_centered = surveydata$cdisc - mean(surveydata$cdisc, 
+    na.rm = T)
+
+surveydata &lt;- surveydata %&gt;% filter(SCHCOMP != 6)
+
+fitbpi &lt;- lm(totbpi ~ cdisc_centered * SCHCOMP, data = surveydata)
+summary(fitbpi)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = totbpi ~ cdisc_centered * SCHCOMP, data = surveydata)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -20.646  -4.856  -1.758   4.147  27.883 
+## 
+## Coefficients:
+##                         Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)              12.3032     1.0738  11.458  &lt; 2e-16 ***
+## cdisc_centered            5.5176     0.9842   5.606  3.5e-08 ***
+## SCHCOMP2                 -3.7842     1.3877  -2.727 0.006625 ** 
+## SCHCOMP3                 -4.3260     1.2304  -3.516 0.000480 ***
+## SCHCOMP4                 -4.7530     1.2433  -3.823 0.000149 ***
+## SCHCOMP5                 -5.5801     1.9309  -2.890 0.004029 ** 
+## cdisc_centered:SCHCOMP2  -0.4654     1.1755  -0.396 0.692320    
+## cdisc_centered:SCHCOMP3  -1.7135     1.1269  -1.521 0.129015    
+## cdisc_centered:SCHCOMP4  -3.2847     1.1556  -2.842 0.004669 ** 
+## cdisc_centered:SCHCOMP5  -1.2822     1.8684  -0.686 0.492895    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 7.854 on 479 degrees of freedom
+##   (2 observations deleted due to missingness)
+## Multiple R-squared:  0.2691, Adjusted R-squared:  0.2554 
+## F-statistic:  19.6 on 9 and 479 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code># Confirm linearity of numeric predictors
+surveydata %&gt;% ggplot(aes(cdisc_centered, totbpi)) + geom_point()</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Confirm normality of residuals
+hist(fitbpi$residuals, main = &quot;Model Residuals&quot;, xlab = &quot;Residual&quot;, 
+    col = &quot;light grey&quot;, right = F)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># Confirm equal variance, seems to be fanning out
+plot(fitbpi$fitted.values, fitbpi$residuals, xlab = &quot;Fitted Values&quot;, 
+    ylab = &quot;Residuals&quot;, main = &quot;Residual Plot&quot;, pch = 20)
+abline(h = 0, col = &quot;red&quot;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-3.png" width="768" style="display: block; margin: auto;" /></p>
+<p>I was interested in what variables contribute to the scores of the behavior problem index in children. I created a linear regression model to see how much variation in bpi can be explained by the child’s school’s racial composition, as well as their exposure to discrimination. For a black child who receives an average amount of discrimination at a school that is almost all black, their estimated score for the behavior problem index is 12.3032. While holding school composition constant, the score on the bpi increases by 5.5176 for every 1 unit increase of discrimination the child receives. The school composition variable is on a scale of 1-5 where a score of 1 means the school is mostly black while 5 means the school is hardly black. With this scale in mind, while holding discrimination constant, a school that is mostly black has a decrease in bpi of 3.7842. While holding discrimination constant, a school that is about half black has a decrease in bpi of 4.3260. While holding discrimination constant, a school that has a few other black children has a decrease in bpi of 4.7530. Finally, while holding discrimination constant, a school that has almost no other black children has the largest decrease in bpi of at 5.5801. There is -3.2847 is a difference in slopes for the 4th category of school composition and cdisc. The interactions with each dependent variable on the x-axis are provided in order to help visualize these coefficients. This data however failed the linearity and equal variance assumptions, which is a limitation that will be adjusted for on future steps. This model explains 25.2% of the difference in total bpi. Therefore, discrimination and school composition do contribute to bpi scores, but there is still a large amount of the variation unaccounted for by this model.</p>
+<pre class="r"><code>fitbpi %&gt;% ggplot(aes(cdisc_centered, totbpi)) + geom_smooth(method = &quot;lm&quot;, 
+    aes(color = SCHCOMP), se = F)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>In this plot, a school composition that was almost all black (1) is shown with the red line, a school that was mostly black (2) was shown by the yellow line, a school that was about half black (3) was shown in green, a school that has a few black students (4) was shown in blue, and a school with close to no other black students (5) is shown in purple. The graph illustrates that at every school, children who were exposed to more discrimination were likely to have a higher score for bpi. This plot also shows that as the schools become less black, the students likely have lower scores on the total behavior problem index. This was the opposite of what I originally expected to see, because I hypothesized that for the black students, a school with a greater number of people who look like them would have a postive impact on their bpi. This opposite effect is likely due to another variable we are not looking into, such as the school’s resources, which may be benefitting the black children even at a school where they are in the minority.</p>
+<pre class="r"><code>library(sandwich)
+fitbpi %&gt;% ggplot(aes(cdisc_centered, totbpi)) + geom_point() + 
+    geom_smooth(method = &quot;lm&quot;, se = F)  #seems to be fanning out</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>bptest(fitbpi)  #fails homoskedasity, need to recompute with robust errors</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  fitbpi
+## BP = 67.388, df = 9, p-value = 4.941e-11</code></pre>
+<pre class="r"><code>coeftest(fitbpi, vcov = vcovHC(fitbpi))</code></pre>
+<pre><code>## 
+## t test of coefficients:
+## 
+##                         Estimate Std. Error t value  Pr(&gt;|t|)    
+## (Intercept)             12.30319    1.19911 10.2603 &lt; 2.2e-16 ***
+## cdisc_centered           5.51759    1.14579  4.8155 1.972e-06 ***
+## SCHCOMP2                -3.78423    1.45215 -2.6059 0.0094475 ** 
+## SCHCOMP3                -4.32595    1.35806 -3.1854 0.0015399 ** 
+## SCHCOMP4                -4.75298    1.34639 -3.5302 0.0004554 ***
+## SCHCOMP5                -5.58011    1.78266 -3.1302 0.0018535 ** 
+## cdisc_centered:SCHCOMP2 -0.46544    1.56654 -0.2971 0.7665061    
+## cdisc_centered:SCHCOMP3 -1.71352    1.36519 -1.2552 0.2100336    
+## cdisc_centered:SCHCOMP4 -3.28474    1.35724 -2.4202 0.0158849 *  
+## cdisc_centered:SCHCOMP5 -1.28216    2.94988 -0.4346 0.6640128    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>This is a plot of the regression with bpi on the y axis and cdisc on the x axis. There does seem to be some fanning out occuring, and therefore failing the homoskedasticity assumption. After running the Breusch-Pagan Test, it was confirmed that the homoskedasticity assumption was failed with a p value of 4.941e-11. The test was then re-run with robust standard errors. All of the same coeffieicents are still significant as above before the correction.</p>
+<pre class="r"><code># Compute bootstrapped SE
+cdisc_centered &lt;- surveydata$cdisc_centered
+SCHCOMP &lt;- surveydata$SCHCOMP
+totbpi &lt;- surveydata$totbpi
+
+surveydatab &lt;- cbind.data.frame(cdisc_centered, SCHCOMP, totbpi)
+surveydatab &lt;- surveydatab %&gt;% na.omit()
+
+samp_distn &lt;- replicate(5000, {
+    data_strapped &lt;- surveydatab[sample(nrow(surveydatab), replace = TRUE), 
+        ]
+    fitboot &lt;- lm(totbpi ~ cdisc_centered * SCHCOMP, data = data_strapped)
+    coef(fitboot)
+})
+## Estimated SEs
+
+samp_distn %&gt;% t %&gt;% as.data.frame %&gt;% summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept) cdisc_centered SCHCOMP2 SCHCOMP3 SCHCOMP4 SCHCOMP5
+## 1    1.170441       1.108424 1.424488 1.323783 1.318234 1.687867
+##   cdisc_centered:SCHCOMP2 cdisc_centered:SCHCOMP3 cdisc_centered:SCHCOMP4
+## 1                1.481987                1.313802                1.305539
+##   cdisc_centered:SCHCOMP5
+## 1                2.526041</code></pre>
+<p>The bootstrapped standard errors are almost identical to, but slightly smaller than those from both tests above.</p>
+<pre class="r"><code>surveydata$SCHCOMP &lt;- factor(surveydata$SCHCOMP)
+surveydata$MARSTAT &lt;- factor(surveydata$MARSTAT)
+
+surveydata &lt;- surveydata %&gt;% drop_na(totbpi)
+surveybpi &lt;- surveydata %&gt;% mutate(totbpi = ifelse(totbpi &gt;= 
+    mean(totbpi), 1, 0))
+surveybpi &lt;- surveybpi %&gt;% drop_na(recodedgpa, cdisc_centered, 
+    SCHCOMP, MARSTAT)
+
+fitbpi &lt;- glm(totbpi ~ recodedgpa + cdisc_centered + SCHCOMP + 
+    MARSTAT, data = surveybpi, family = &quot;binomial&quot;)
+coeftest(fitbpi)</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                 Estimate Std. Error z value  Pr(&gt;|z|)    
+## (Intercept)     5.329291   0.901218  5.9134 3.350e-09 ***
+## recodedgpa     -1.568980   0.255095 -6.1506 7.721e-10 ***
+## cdisc_centered  0.599083   0.099808  6.0023 1.945e-09 ***
+## SCHCOMP2       -0.737097   0.407160 -1.8103  0.070243 .  
+## SCHCOMP3       -0.996240   0.362601 -2.7475  0.006005 ** 
+## SCHCOMP4       -0.751779   0.363398 -2.0687  0.038570 *  
+## SCHCOMP5       -1.251208   0.605629 -2.0660  0.038832 *  
+## MARSTAT2        0.166883   0.258096  0.6466  0.517896    
+## MARSTAT3       -0.233209   0.398985 -0.5845  0.558881    
+## MARSTAT4       -0.859369   0.688158 -1.2488  0.211739    
+## MARSTAT5       -0.654860   1.122903 -0.5832  0.559769    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(coef(fitbpi))</code></pre>
+<pre><code>##    (Intercept)     recodedgpa cdisc_centered       SCHCOMP2       SCHCOMP3 
+##    206.2916601      0.2082576      1.8204486      0.4785009      0.3692654 
+##       SCHCOMP4       SCHCOMP5       MARSTAT2       MARSTAT3       MARSTAT4 
+##      0.4715272      0.2861590      1.1816158      0.7919884      0.4234290 
+##       MARSTAT5 
+##      0.5195146</code></pre>
+<p>In order to run a logistic regression, I created a binary variable from the totbpi variable by categorizing scores as either above or below the mean. With this new variable, I wanted to model that probability that a student would have a higher than average, or lower than average bpi score. With this model, I attempt to predict a student’s bpi catergorization using their gpa, their exposure to discrimination, their school’s composition, and their parents marital status. The intercept is the odds of a student having a higher than average bpi with a gpa of 0, a cdisc of 0, a school that is all black and parents that have never been married. Holding cdisc, school compostion, and parent’s marital status constant, one-unit increase in gpa multiplies the odds of having a higher than average bpi score by a factor of 0.2082576. Holding gpa, school compostion, and parent’s marital status constant, one-unit increase in a child’s discrimination score multiplies the odds of having a higher than average bpi score by a factor of 1.8204486. Holding cdisc, school gpa, and parent’s marital status constant, having a school that is about half black multiplies the odds of having a higher than average bpi score by a factor of .3692654. Holding cdisc, school gpa, and parent’s marital status constant, having a school that has a few other black students multiplies the odds of having a higher than average bpi score by a factor of .4715272. Holding cdisc, school gpa, and parent’s marital status constant, having a school that has almost no other black students multiplies the odds of having a higher than average bpi score by a factor of .2861590.</p>
+<pre class="r"><code>class_diag &lt;- function(probs, truth) {
+    
+    tab &lt;- table(factor(probs &gt; 0.5, levels = c(&quot;FALSE&quot;, &quot;TRUE&quot;)), 
+        truth)
+    acc = sum(diag(tab))/sum(tab)
+    sens = tab[2, 2]/colSums(tab)[2]
+    spec = tab[1, 1]/colSums(tab)[1]
+    ppv = tab[2, 2]/rowSums(tab)[2]
+    
+    if (is.numeric(truth) == FALSE &amp; is.logical(truth) == FALSE) 
+        truth &lt;- as.numeric(truth) - 1
+    
+    # CALCULATE EXACT AUC
+    ord &lt;- order(probs, decreasing = TRUE)
+    probs &lt;- probs[ord]
+    truth &lt;- truth[ord]
+    
+    TPR = cumsum(truth)/max(1, sum(truth))
+    FPR = cumsum(!truth)/max(1, sum(!truth))
+    
+    dup &lt;- c(probs[-1] &gt;= probs[-length(probs)], FALSE)
+    TPR &lt;- c(0, TPR[!dup], 1)
+    FPR &lt;- c(0, FPR[!dup], 1)
+    
+    n &lt;- length(TPR)
+    auc &lt;- sum(((TPR[-1] + TPR[-n])/2) * (FPR[-1] - FPR[-n]))
+    
+    data.frame(acc, sens, spec, ppv, auc)
+}
+
+
+surveybpi$prob &lt;- predict(fitbpi, type = &quot;response&quot;)
+table(predict = as.numeric(surveybpi$prob &gt; 0.5), truth = surveybpi$totbpi) %&gt;% 
+    addmargins</code></pre>
+<pre><code>##        truth
+## predict   0   1 Sum
+##     0   275  98 373
+##     1    39  76 115
+##     Sum 314 174 488</code></pre>
+<pre class="r"><code>class_diag(surveybpi$prob, truth = surveybpi$totbpi)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.7192623 0.4367816 0.8757962 0.6608696 0.7630225</code></pre>
+<p>The confusion matrix shows that the model does a better job of classifying negatives than positives. This is confirmed by the high specificity, or true negative rate given as 0.8757962. The sensitivity, or true positive rate is much lower at 0.4367816. The accuracy of this model is 0.7192623. The positive predictive value, or precison is 0.6608696 and the area under the curve (AUC) is 0.7630225. The AUC represents the probability that a randomly selected child with a higher than average bpi score has a higher prediction than a randomly selected child with a lower than average bpi score. So, 0.7630225 is a pretty decent AUC.</p>
+<pre class="r"><code>logit &lt;- predict(fitbpi, response = &quot;logit&quot;)
+
+surveybpi &lt;- surveybpi %&gt;% drop_na(totbpi)
+surveybpi$bpi_Cat &lt;- ifelse(surveybpi$totbpi &gt; mean(surveybpi$totbpi), 
+    &quot;above mean&quot;, &quot;below mean&quot;)
+
+
+ggplot(surveybpi, aes(x = logit, fill = bpi_Cat)) + geom_density(alpha = 0.75)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /> This graph is a visualization of what the model is predicting in each category. Everything that is being predicted as above the mean is shown in pink. Everything being categorized as below the mean is shown in blue. Everything in grey has been miscategorized. To the right of 0, gray is proportion of below the mean that we predicted above it (false positives). To the left of 0, gray is proportion of above the mean that we predicted below it (false negatives).</p>
+<pre class="r"><code>ROCplot &lt;- ggplot(surveybpi) + geom_roc(aes(d = totbpi, m = prob), 
+    n.cuts = 0)
+ROCplot</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-11-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.7630225</code></pre>
+<p>This graph is the ROC (receiver operating characteristic) curve of our model. The area under the curve (AUC) of 0.7630225 quantifies how well the model is predicting overall. Since ours is found in the range of .7-.8, it is doing a fair job.</p>
+<pre class="r"><code>set.seed(1234)
+k = 10
+
+data1 &lt;- surveybpi[sample(nrow(surveybpi)), ]  #randomly order rows
+folds &lt;- cut(seq(1:nrow(surveybpi)), breaks = k, labels = F)  #create folds
+
+diags &lt;- NULL
+for (i in 1:k) {
+    ## Create training and test sets
+    train &lt;- data1[folds != i, ]
+    test &lt;- data1[folds == i, ]
+    truth &lt;- test$totbpi
+    
+    ## Train model on training set
+    fit &lt;- glm(totbpi ~ recodedgpa + cdisc_centered + SCHCOMP + 
+        MARSTAT, data = train, family = &quot;binomial&quot;)
+    probs &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
+    ## Test model on test set (save all k results)
+    diags &lt;- rbind(diags, class_diag(probs, truth))
+}
+
+
+apply(diags, 2, mean)  #average across all k results</code></pre>
+<pre><code>##       acc      sens      spec       ppv       auc 
+## 0.7192177 0.4476838 0.8770594 0.6569188 0.7438930</code></pre>
+<p>A 10-fold cross validation was performed to test model’s ability to predict new data that was not used to estimate it. The values are very similar to those before, but are slightly more conservative. The accuracy is now 0.7213010, the sensitivity is 0.4375142, the specificity is 0.8736509, the precision is 0.6571054, and the AUC is 0.7308493. The AUC is slightly lower with the new data, but it is still very similar to the in-sample data. So, a child’s school composition and experiences of discrimination are decent predictors of their bpi.</p>
+<pre class="r"><code>library(glmnet)
+surveydata$SCHCOMP &lt;- factor(surveydata$SCHCOMP)
+surveydata$MARSTAT &lt;- factor(surveydata$MARSTAT)
+surveydata$PA_EDU &lt;- factor(surveydata$PA_EDU)
+surveydata$PART_EDU &lt;- factor(surveydata$PART_EDU)
+surveydata$NEIGHCOMP &lt;- factor(surveydata$NEIGHCOMP)
+surveydata$JOBCOMP &lt;- factor(surveydata$JOBCOMP)
+surveydata$LIVEWT &lt;- factor(surveydata$LIVEWT)
+surveydata$CH_GEN &lt;- factor(surveydata$CH_GEN)
+
+
+surveydata &lt;- surveydata %&gt;% drop_na(totbpi)
+surveybpi &lt;- surveydata %&gt;% mutate(totbpi = ifelse(totbpi &gt;= 
+    mean(totbpi), 1, 0))
+surveybpi &lt;- surveybpi %&gt;% drop_na(PA_AGE, LIVEWT, CH_GEN, PA_EDU, 
+    PART_EDU, MARSTAT, TOTIVP, CRPR_TOT, RAC_SOC, CUL_SOC, MMRI, 
+    vicarious, pdisc, cdisc, TOTRCON, Q232, Q233, totbpi, recodedgpa, 
+    NEIGHCOMP, JOBCOMP, SCHCOMP, recodedincome, COUNTRY, cdisc_centered)
+
+surveybpi &lt;- surveybpi %&gt;% dplyr::select(-cdisc)
+
+set.seed(1234)
+
+fiteverything &lt;- glm(totbpi ~ ., data = surveybpi, family = &quot;binomial&quot;)
+y &lt;- as.matrix(surveybpi$totbpi)  ###save response variable 
+x &lt;- model.matrix(fiteverything)  ###save matrix of all predictors (dropping the response variable)
+x &lt;- x[, -1]
+
+cv &lt;- cv.glmnet(x, y, family = &quot;binomial&quot;)
+lasso &lt;- glmnet(x, y, family = &quot;binomial&quot;, lambda = cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 54 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                         s0
+## (Intercept)     2.96431079
+## PA_GEN          .         
+## PA_AGE          .         
+## LIVEWT2         .         
+## LIVEWT3         .         
+## CH_GEN2         .         
+## CH_GEN3         .         
+## PA_EDU2         .         
+## PA_EDU3         .         
+## PA_EDU4         .         
+## PA_EDU5         .         
+## PA_EDU6         .         
+## PA_EDU7         .         
+## PA_EDU8         .         
+## PA_EDU9         .         
+## PART_EDU2       .         
+## PART_EDU3       .         
+## PART_EDU4       .         
+## PART_EDU5       .         
+## PART_EDU6       .         
+## PART_EDU7       .         
+## PART_EDU8       .         
+## PART_EDU9       .         
+## MARSTAT2        .         
+## MARSTAT3        .         
+## MARSTAT4        .         
+## MARSTAT5        .         
+## TOTIVP          .         
+## CRPR_TOT        .         
+## RAC_SOC         .         
+## CUL_SOC         .         
+## MMRI           -0.19744881
+## vicarious       .         
+## pdisc           0.03095143
+## TOTRCON         .         
+## Q232            .         
+## Q233            .         
+## NEIGHCOMP2      .         
+## NEIGHCOMP3      .         
+## NEIGHCOMP4      .         
+## NEIGHCOMP5      .         
+## JOBCOMP2        .         
+## JOBCOMP3        .         
+## JOBCOMP4        .         
+## JOBCOMP5        .         
+## JOBCOMP6        .         
+## SCHCOMP2        .         
+## SCHCOMP3        .         
+## SCHCOMP4        .         
+## SCHCOMP5        .         
+## recodedincome   .         
+## recodedgpa     -0.78564297
+## COUNTRY         .         
+## cdisc_centered  0.25639416</code></pre>
+<pre class="r"><code># plug in only what was significant
+surveylasso &lt;- surveybpi
+surveylasso$PART_EDU4 &lt;- ifelse(surveylasso$PART_EDU == &quot;4&quot;, 
+    1, 0)
+
+set.seed(1234)
+k = 10
+
+data1 &lt;- surveylasso[sample(nrow(surveylasso)), ]  #randomly order rows
+folds &lt;- cut(seq(1:nrow(surveylasso)), breaks = k, labels = F)  #create folds
+
+diags &lt;- NULL
+for (i in 1:k) {
+    ## Create training and test sets
+    train &lt;- data1[folds != i, ]
+    test &lt;- data1[folds == i, ]
+    truth &lt;- test$totbpi
+    
+    ## Train model on training set
+    fit &lt;- glm(totbpi ~ PART_EDU4 + MMRI + pdisc + cdisc_centered + 
+        recodedgpa, data = train, family = &quot;binomial&quot;)
+    probs &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
+    ## Test model on test set (save all k results)
+    diags &lt;- rbind(diags, class_diag(probs, truth))
+}
+
+
+apply(diags, 2, mean)  #average across all k results</code></pre>
+<pre><code>##       acc      sens      spec       ppv       auc 
+## 0.7475610 0.5417262 0.8697802 0.6909499 0.7928296</code></pre>
+<p>After running a lasso-regression, the coefficients that are non-zero for predicting whether a person has higher or lower than average bpi score are PART_EDU4 (partner’s highest education level is some college), MMRI (racial identity score), pdisc, cdisc_centered, and recodedgpa. Plugging in these variables into a cross validation improves the results of our model, and it is doing a pretty good job of predicting which bpi category a child falls in. The accuracy is 0.7499390, sensitivity (true positive rate) is 0.5577210, specificity (true negative rate) is 0.8659588, precision (postitive predictive value) is 0.7140565 and the area under the curve is 0.8007965.</p>
+<pre class="r"><code>surveydata$pdisc_centered = surveydata$pdisc - mean(surveydata$pdisc, 
+    na.rm = T)
+
+
+Income &lt;- surveydata %&gt;% mutate(recodedincome = ifelse(recodedincome &gt;= 
+    mean(recodedincome), 1, 0))
+Income &lt;- Income %&gt;% drop_na(PA_EDU, PA_GEN, pdisc_centered, 
+    recodedincome, vicarious, PART_EDU)
+Income$PA_EDU &lt;- factor(Income$PA_EDU)
+Income$PA_GEN &lt;- factor(Income$PA_GEN)
+
+fitinc &lt;- glm(recodedincome ~ PA_EDU + PART_EDU, data = Income, 
+    family = &quot;binomial&quot;)
+coeftest(fitinc)</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##              Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept) -15.84062  636.10064 -0.0249  0.98013  
+## PA_EDU2       0.62177    0.95033  0.6543  0.51294  
+## PA_EDU3      -0.15634    0.92311 -0.1694  0.86551  
+## PA_EDU4      -0.30907    0.85020 -0.3635  0.71621  
+## PA_EDU5       0.12376    0.85009  0.1456  0.88425  
+## PA_EDU6       0.77047    0.83014  0.9281  0.35334  
+## PA_EDU7       1.71808    1.01360  1.6950  0.09007 .
+## PA_EDU8       1.02542    0.85801  1.1951  0.23205  
+## PA_EDU9       2.89659    1.13697  2.5476  0.01085 *
+## PART_EDU2    13.51657  636.10062  0.0212  0.98305  
+## PART_EDU3    14.46330  636.10036  0.0227  0.98186  
+## PART_EDU4    14.65536  636.10031  0.0230  0.98162  
+## PART_EDU5    14.54057  636.10035  0.0229  0.98176  
+## PART_EDU6    15.43116  636.10030  0.0243  0.98065  
+## PART_EDU7    17.09018  636.10074  0.0269  0.97857  
+## PART_EDU8    16.54569  636.10038  0.0260  0.97925  
+## PART_EDU9    15.58258  636.10092  0.0245  0.98046  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(coeftest(fitinc))</code></pre>
+<pre><code>## 
+## z test of coefficients:
+## 
+##                Estimate  Std. Error z value Pr(&gt;|z|)
+## (Intercept)  1.3198e-07 1.7989e+276  0.9754    2.665
+## PA_EDU2      1.8622e+00  2.5866e+00  1.9237    1.670
+## PA_EDU3      8.5527e-01  2.5171e+00  0.8442    2.376
+## PA_EDU4      7.3413e-01  2.3401e+00  0.6952    2.047
+## PA_EDU5      1.1317e+00  2.3399e+00  1.1567    2.421
+## PA_EDU6      2.1608e+00  2.2936e+00  2.5298    1.424
+## PA_EDU7      5.5738e+00  2.7555e+00  5.4468    1.094
+## PA_EDU8      2.7883e+00  2.3585e+00  3.3039    1.261
+## PA_EDU9      1.8112e+01  3.1173e+00 12.7768    1.011
+## PART_EDU2    7.4160e+05 1.7988e+276  1.0215    2.673
+## PART_EDU3    1.9113e+06 1.7984e+276  1.0230    2.669
+## PART_EDU4    2.3160e+06 1.7983e+276  1.0233    2.669
+## PART_EDU5    2.0649e+06 1.7983e+276  1.0231    2.669
+## PART_EDU6    5.0312e+06 1.7983e+276  1.0246    2.666
+## PART_EDU7    2.6434e+07 1.7990e+276  1.0272    2.661
+## PART_EDU8    1.5336e+07 1.7984e+276  1.0264    2.662
+## PART_EDU9    5.8537e+06 1.7994e+276  1.0248    2.666</code></pre>
+<pre class="r"><code>Income$prob &lt;- predict(fitinc, type = &quot;response&quot;)
+table(predict = as.numeric(Income$prob &gt; 0.5), truth = Income$recodedincome) %&gt;% 
+    addmargins</code></pre>
+<pre><code>##        truth
+## predict   0   1 Sum
+##     0   176  65 241
+##     1    50 120 170
+##     Sum 226 185 411</code></pre>
+<pre class="r"><code>class_diag(Income$prob, truth = Income$recodedincome)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.7201946 0.6486486 0.7787611 0.7058824 0.7912102</code></pre>
+<pre class="r"><code>logit &lt;- predict(fitinc, response = &quot;logit&quot;)
+
+Income &lt;- Income %&gt;% drop_na(recodedincome)
+Income$Income_Cat &lt;- ifelse(Income$recodedincome &gt; mean(Income$recodedincome), 
+    &quot;above mean&quot;, &quot;below mean&quot;)
+
+
+ggplot(Income, aes(x = logit, fill = Income_Cat)) + geom_density(alpha = 0.75)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-15-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ROCplot &lt;- ggplot(Income) + geom_roc(aes(d = recodedincome, m = prob), 
+    n.cuts = 0)
+ROCplot</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-15-2.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>calc_auc(ROCplot)</code></pre>
+<pre><code>##   PANEL group       AUC
+## 1     1    -1 0.7912102</code></pre>
+<p>I was interested in seeing if I could predict whether a family would be expected to have an income above or below average, solely based on the education levels of the mother and father. These factors alone had an accuracy of 0.7201946, a sensitivity of 0.6486486, a specificity of 0.7787611 , a precision of 0.7058824, and an AUC of 0.7912102. The AUC represents the probability that a randomly selected parent with a higher than average income has a higher prediction than a randomly selected parent with a lower than average avaerage. So,with an AUC of 0.7912102, this model is performing well. The intercept shows that the reference group of parents who did not complete junior high have and odds of .0000001319 of making an income above the average. However, when both parents have doctoral degrees, the odds of them making above an average income are 32,627,353 times the odds of parents who did not finish junior high.</p>
+<pre class="r"><code>set.seed(1234)
+k = 10
+
+data1 &lt;- Income[sample(nrow(Income)), ]  #randomly order rows
+folds &lt;- cut(seq(1:nrow(Income)), breaks = k, labels = F)  #create folds
+
+diags &lt;- NULL
+for (i in 1:k) {
+    ## Create training and test sets
+    train &lt;- data1[folds != i, ]
+    test &lt;- data1[folds == i, ]
+    truth &lt;- test$recodedincome
+    
+    ## Train model on training set
+    fit &lt;- glm(recodedincome ~ PA_EDU + PART_EDU, data = train, 
+        family = &quot;binomial&quot;)
+    probs &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
+    ## Test model on test set (save all k results)
+    diags &lt;- rbind(diags, class_diag(probs, truth))
+}
+
+
+apply(diags, 2, mean)  #average across all k results</code></pre>
+<pre><code>##       acc      sens      spec       ppv       auc 
+## 0.7150407 0.6479708 0.7769169 0.7001519 0.7593288</code></pre>
+<p>The logistic regression for the model with out of sample data. The results from this cross validation are lower than the values from above with an accuracy of 0.7153891, a sensitiviy of 0.6397746, a specificity of 0.7784177, a precision of 0.7080453 and an AUC of 0.0.7588930. This is likely due to the high number of categories that the parents could fall into in education (9 categories each). This model is doing a decent job of catergorizing household incomes as either above or below the mean based on education levels, but in the next step, removing some of these excess variables should help remove the noise that the model was picking up on.</p>
+<pre class="r"><code>Income$SCHCOMP &lt;- factor(Income$SCHCOMP)
+Income$MARSTAT &lt;- factor(Income$MARSTAT)
+Income$PA_EDU &lt;- factor(Income$PA_EDU)
+Income$PART_EDU &lt;- factor(Income$PART_EDU)
+Income$NEIGHCOMP &lt;- factor(Income$NEIGHCOMP)
+Income$JOBCOMP &lt;- factor(Income$JOBCOMP)
+Income$LIVEWT &lt;- factor(Income$LIVEWT)
+Income$CH_GEN &lt;- factor(Income$CH_GEN)
+
+
+
+
+surveydata &lt;- surveydata %&gt;% drop_na(recodedincome)
+surveyinc &lt;- surveydata %&gt;% mutate(recodedincome = ifelse(recodedincome &gt; 
+    mean(recodedincome), 1, 0))
+surveyinc &lt;- surveyinc %&gt;% filter(JOBCOMP != 6)
+surveyinc &lt;- surveyinc %&gt;% drop_na(PA_AGE, LIVEWT, CH_GEN, PA_EDU, 
+    PART_EDU, MARSTAT, TOTIVP, CRPR_TOT, RAC_SOC, CUL_SOC, MMRI, 
+    vicarious, pdisc, cdisc, TOTRCON, Q232, Q233, totbpi, recodedgpa, 
+    NEIGHCOMP, JOBCOMP, SCHCOMP, recodedincome, COUNTRY)
+
+
+set.seed(1234)
+fiteverything &lt;- glm(recodedincome ~ ., data = surveyinc, family = &quot;binomial&quot;)
+y &lt;- as.matrix(surveyinc$recodedincome)  ###save response variable 
+x &lt;- model.matrix(fiteverything)  ###save matrix of all predictors (dropping the response variable)
+x &lt;- x[, -1]
+
+cv &lt;- cv.glmnet(x, y, family = &quot;binomial&quot;)
+lasso &lt;- glmnet(x, y, family = &quot;binomial&quot;, lambda = cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 55 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                         s0
+## (Intercept)    -0.94451719
+## PA_GEN          .         
+## PA_AGE          .         
+## LIVEWT2         .         
+## LIVEWT3         .         
+## CH_GEN2         .         
+## CH_GEN3         .         
+## PA_EDU2         .         
+## PA_EDU3        -0.08170020
+## PA_EDU4        -0.61552196
+## PA_EDU5        -0.33657274
+## PA_EDU6         .         
+## PA_EDU7         .         
+## PA_EDU8         .         
+## PA_EDU9         0.57443342
+## PART_EDU2      -0.54135420
+## PART_EDU3      -0.26008525
+## PART_EDU4       .         
+## PART_EDU5       .         
+## PART_EDU6       0.08593753
+## PART_EDU7       0.94153558
+## PART_EDU8       1.01445696
+## PART_EDU9       .         
+## MARSTAT2        1.14048530
+## MARSTAT3        .         
+## MARSTAT4        .         
+## MARSTAT5        .         
+## TOTIVP          .         
+## CRPR_TOT        .         
+## RAC_SOC         .         
+## CUL_SOC         .         
+## MMRI            .         
+## vicarious       .         
+## pdisc           .         
+## cdisc           .         
+## TOTRCON         .         
+## Q232            .         
+## Q233            .         
+## totbpi          .         
+## NEIGHCOMP2      .         
+## NEIGHCOMP3      .         
+## NEIGHCOMP4      .         
+## NEIGHCOMP5      .         
+## JOBCOMP2        .         
+## JOBCOMP3        .         
+## JOBCOMP4        .         
+## JOBCOMP5        .         
+## SCHCOMP2        .         
+## SCHCOMP3        .         
+## SCHCOMP4        .         
+## SCHCOMP5        .         
+## recodedgpa      .         
+## COUNTRY         .         
+## cdisc_centered  .         
+## pdisc_centered  .</code></pre>
+<pre class="r"><code>surveyinc$PA_EDU3 &lt;- ifelse(surveyinc$PA_EDU == &quot;3&quot;, 1, 0)
+surveyinc$PA_EDU4 &lt;- ifelse(surveyinc$PA_EDU == &quot;4&quot;, 1, 0)
+surveyinc$PA_EDU5 &lt;- ifelse(surveyinc$PA_EDU == &quot;5&quot;, 1, 0)
+surveyinc$PA_EDU9 &lt;- ifelse(surveyinc$PA_EDU == &quot;9&quot;, 1, 0)
+
+surveyinc$PART_EDU2 &lt;- ifelse(surveyinc$PART_EDU == &quot;2&quot;, 1, 0)
+surveyinc$PART_EDU3 &lt;- ifelse(surveyinc$PART_EDU == &quot;3&quot;, 1, 0)
+surveyinc$PART_EDU7 &lt;- ifelse(surveyinc$PART_EDU == &quot;7&quot;, 1, 0)
+surveyinc$PART_EDU8 &lt;- ifelse(surveyinc$PART_EDU == &quot;8&quot;, 1, 0)
+surveyinc$PART_EDU6 &lt;- ifelse(surveyinc$PART_EDU == &quot;6&quot;, 1, 0)
+
+surveyinc$MARSTAT2 &lt;- ifelse(surveyinc$MARSTAT == &quot;2&quot;, 1, 0)
+
+
+set.seed(1234)
+k = 10
+
+data1 &lt;- surveyinc[sample(nrow(surveyinc)), ]  #randomly order rows
+folds &lt;- cut(seq(1:nrow(surveyinc)), breaks = k, labels = F)  #create folds
+
+diags &lt;- NULL
+for (i in 1:k) {
+    ## Create training and test sets
+    train &lt;- data1[folds != i, ]
+    test &lt;- data1[folds == i, ]
+    truth &lt;- test$recodedincome
+    
+    ## Train model on training set
+    fit &lt;- glm(recodedincome ~ PA_EDU3 + PA_EDU4 + PA_EDU5 + 
+        PA_EDU9 + PART_EDU2 + PART_EDU3 + PART_EDU7 + PART_EDU8 + 
+        PART_EDU6 + MARSTAT2, data = train, family = &quot;binomial&quot;)
+    probs &lt;- predict(fit, newdata = test, type = &quot;response&quot;)
+    ## Test model on test set (save all k results)
+    diags &lt;- rbind(diags, class_diag(probs, truth))
+}
+
+
+apply(diags, 2, mean)  #average across all k results</code></pre>
+<pre><code>##       acc      sens      spec       ppv       auc 
+## 0.7501681 0.7521280 0.7519153 0.7350177 0.8256999</code></pre>
+<p>By running the lasso regression, the model is better overall. The accuracy is 0.7438655, the sensitivity is 0.7349330, the specificity is 0.7436869, the precision is 0.7202001, and the AUC is now 0.8169085. The only variables with non-zero coefficients for this lasso regression were: if the parent is currently married, if the parent graduated HS, if the parent dropped out of college before an associate’s degree, if the parent obtained their associate’s degree, if the parent obtained a doctoral degree, if the partner dropped out of HS, if the partner finished HS, if the partner obtained their bachelor’s degree, some graduate school, and obtained their master’s degree. One point of interest is that for the PA_EDU, obtaining a bachelor’s degree was not significant when compared to the others and for the PART_EDU, obtaining a bachelor’s degree was significant, but its coefficient was still very small. This emphasizes how obtaining a bachelor’s degree is no longer a super strong indicator of income, and instead in most cases it takes graduate level education to achieve higher levels of income.</p>
+<pre class="r"><code>surveygpa &lt;- surveydata %&gt;% drop_na(recodedgpa)
+surveygpa &lt;- surveygpa %&gt;% mutate(recodedgpa = ifelse(recodedgpa &gt;= 
+    mean(recodedgpa), 1, 0))
+
+
+surveygpa &lt;- surveygpa %&gt;% drop_na(PA_AGE, LIVEWT, CH_GEN, PA_EDU, 
+    PART_EDU, MARSTAT, TOTIVP, CRPR_TOT, RAC_SOC, CUL_SOC, MMRI, 
+    vicarious, pdisc, cdisc, TOTRCON, Q232, Q233, totbpi, recodedgpa, 
+    NEIGHCOMP, JOBCOMP, SCHCOMP, recodedincome, COUNTRY)
+
+
+set.seed(348)
+fiteverything &lt;- glm(recodedgpa ~ ., data = surveygpa, family = &quot;binomial&quot;)
+y &lt;- as.matrix(surveygpa$recodedgpa)  ###save response variable 
+x &lt;- model.matrix(fiteverything)  ###save matrix of all predictors (dropping the response variable)
+x &lt;- x[, -1]
+
+cv &lt;- cv.glmnet(x, y, family = &quot;binomial&quot;)
+lasso &lt;- glmnet(x, y, family = &quot;binomial&quot;, lambda = cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 56 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                         s0
+## (Intercept)     0.14529496
+## PA_GEN          .         
+## PA_AGE          .         
+## LIVEWT2         .         
+## LIVEWT3         .         
+## CH_GEN2         .         
+## CH_GEN3         .         
+## PA_EDU2         .         
+## PA_EDU3         .         
+## PA_EDU4         .         
+## PA_EDU5         .         
+## PA_EDU6         .         
+## PA_EDU7         .         
+## PA_EDU8         .         
+## PA_EDU9         .         
+## PART_EDU2       .         
+## PART_EDU3       .         
+## PART_EDU4       .         
+## PART_EDU5       .         
+## PART_EDU6       .         
+## PART_EDU7       .         
+## PART_EDU8       .         
+## PART_EDU9       .         
+## MARSTAT2        .         
+## MARSTAT3        .         
+## MARSTAT4        .         
+## MARSTAT5        .         
+## TOTIVP          .         
+## CRPR_TOT        .         
+## RAC_SOC         .         
+## CUL_SOC         .         
+## MMRI            .         
+## vicarious       .         
+## pdisc           .         
+## cdisc           .         
+## TOTRCON         .         
+## Q232            .         
+## Q233            .         
+## totbpi         -0.02112477
+## NEIGHCOMP2      .         
+## NEIGHCOMP3      .         
+## NEIGHCOMP4      .         
+## NEIGHCOMP5      .         
+## JOBCOMP2        .         
+## JOBCOMP3        .         
+## JOBCOMP4        .         
+## JOBCOMP5        .         
+## JOBCOMP6        .         
+## SCHCOMP2        .         
+## SCHCOMP3        .         
+## SCHCOMP4        .         
+## SCHCOMP5        .         
+## recodedincome   .         
+## COUNTRY         .         
+## cdisc_centered  .         
+## pdisc_centered  .</code></pre>
+<p>One last thing that I wanted to illustrate is the importance of the bpi (behavior problem index). I did, however, end up running a lasso regression just to see what variables are significant predictors of a child’s GPA. It turns out that bpi was the only important predictor. This was similar to the result in the original MANOVA where the total bpi is the only numeric variable that was significantly different among GPA groupings. A child’s bpi score was modeled extensively above, and this lasso regression reveals just how influential it can be on a child’s GPA compared to not just the numeric variables but also the categorical variables. Since the bpi score targets topics such as depression, anxiety, and sociality, these results emphasize how important mental health is to a child’s academic performance.</p>
+<pre><code>## R version 3.6.1 (2019-07-05)
+## Platform: x86_64-apple-darwin15.6.0 (64-bit)
+## Running under: macOS Catalina 10.15.1
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRblas.0.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/3.6/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] glmnet_3.0-1     Matrix_1.2-17    sandwich_2.5-1   mvnormtest_0.1-9
+##  [5] plotROC_2.2.1    lmtest_0.9-37    zoo_1.8-6        MASS_7.3-51.4   
+##  [9] dbplyr_1.4.2     forcats_0.4.0    stringr_1.4.0    dplyr_0.8.3     
+## [13] purrr_0.3.2      readr_1.3.1      tidyr_1.0.0      tibble_2.1.3    
+## [17] ggplot2_3.2.1    tidyverse_1.2.1  knitr_1.25      
+## 
+## loaded via a namespace (and not attached):
+##  [1] Rcpp_1.0.2       lubridate_1.7.4  lattice_0.20-38  foreach_1.4.7   
+##  [5] assertthat_0.2.1 zeallot_0.1.0    digest_0.6.21    utf8_1.1.4      
+##  [9] R6_2.4.0         cellranger_1.1.0 plyr_1.8.4       backports_1.1.5 
+## [13] evaluate_0.14    httr_1.4.1       blogdown_0.17    pillar_1.4.2    
+## [17] rlang_0.4.0      lazyeval_0.2.2   readxl_1.3.1     rstudioapi_0.10 
+## [21] rmarkdown_1.16   labeling_0.3     munsell_0.5.0    broom_0.5.2     
+## [25] compiler_3.6.1   modelr_0.1.5     xfun_0.10        pkgconfig_2.0.3 
+## [29] shape_1.4.4      htmltools_0.4.0  tidyselect_0.2.5 bookdown_0.16   
+## [33] codetools_0.2-16 fansi_0.4.0      crayon_1.3.4     withr_2.1.2     
+## [37] grid_3.6.1       nlme_3.1-140     jsonlite_1.6     gtable_0.3.0    
+## [41] lifecycle_0.1.0  DBI_1.0.0        magrittr_1.5     formatR_1.7     
+## [45] scales_1.0.0     cli_1.1.0        stringi_1.4.3    xml2_1.2.2      
+## [49] ellipsis_0.3.0   generics_0.0.2   vctrs_0.2.0      iterators_1.0.12
+## [53] tools_3.6.1      glue_1.3.1       hms_0.5.1        yaml_2.2.0      
+## [57] colorspace_1.4-1 rvest_0.3.4      haven_2.1.1</code></pre>
+<pre><code>## [1] &quot;2019-12-05 23:10:27 CST&quot;</code></pre>
+<pre><code>##                                                                                            sysname 
+##                                                                                           &quot;Darwin&quot; 
+##                                                                                            release 
+##                                                                                           &quot;19.0.0&quot; 
+##                                                                                            version 
+## &quot;Darwin Kernel Version 19.0.0: Thu Oct 17 16:17:15 PDT 2019; root:xnu-6153.41.3~29/RELEASE_X86_64&quot; 
+##                                                                                           nodename 
+##                                                                          &quot;Ninas-MacBook-Air.local&quot; 
+##                                                                                            machine 
+##                                                                                           &quot;x86_64&quot; 
+##                                                                                              login 
+##                                                                                             &quot;root&quot; 
+##                                                                                               user 
+##                                                                                       &quot;ninaflores&quot; 
+##                                                                                     effective_user 
+##                                                                                       &quot;ninaflores&quot;</code></pre>
+</div>

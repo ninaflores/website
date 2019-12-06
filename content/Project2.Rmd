@@ -1,0 +1,664 @@
+---
+title: "Modeling Project"
+author: "SDS348 Fall 2019"
+date: ""
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r global_options, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, fig.width=8, tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+## Nina Flores, nmf538
+
+
+
+---
+
+
+  This data comes from a survey that Dr. Fatima Varner's African American Resilience in Context lab in the Department of Human Development and Family Sciences conducted. The survey has responses from 324 black mothers and 252 black fathers with an adolescent child between 11-18. The survey had over 300 questions targeting various social constructs covering topics of school involvement, parenting behaviors, racial concerns, and racial discrimination. The variables of interest for this project include: 'PA_EDU', 'PART_EDU', 'MARSTAT', 'TOTIVP', 'vicarious', 'pdisc', 'cdisc', 'TOTRCON', 'totbpi', 'NEIGHCOMP', 'JOBCOMP', 'SCHCOMP', 'TOTINC', 'recodedgpa'. 'PA_EDU' and 'PART_EDU' refer to the parent and partner's highest level of education received. 'MARSTAT' is a parent's marital status. 'TOTIVP' stands for 'involved-vigilant parenting.' This section assesses aspects of parents’ behavioral control of their children, and their responsiveness as well. 'Vicarious' assesses indirect experiences of discrimination that the parent received. 'Pdisc' measures the personal discrimination that the parent experienced and 'cdisc' asseses the child's experiences with racial discrimination. 'TOTRCON' is a measure of the racial concerns that a parent has for their child through questions like "How often do you worry your child will get fewer job interviews because of his or her race?" 'totbpi' stands for the 'behavior problem index' and dives into a child's tendencies towards depression, anxiety, and peer victimization. 'NEIGHCOMP,' 'JOBCOMP',and 'SCHCOMP' all measure the "blackness of different spaces of the child or parent's day-to-day experience by asking about the racial compostion and demographics of the neighborhood, work, and school.
+
+
+```{R}
+library(tidyverse)
+library(dbplyr)
+library(MASS)
+library(lmtest)
+library(plotROC)
+
+data <- read.csv("~/Downloads/Black parent survey for Nina 2 (1).csv")
+
+
+#removing the idk category so it doesn't skew results
+#also removed the ones with 1-3 observations
+datanoidk <- data %>% filter(Q297 != 8)
+datano1 <- datanoidk %>% filter(Q297 != 1)
+datano2 <- datano1%>% filter(Q297 != 2)
+datano3 <- datano2%>% filter(Q297 != 3)
+
+#recode income variable into means for more meaningful interpretations
+datz <- datano3 %>% mutate(recodedincome=recode(TOTINC, 5000, 15000,  25000,  35000,  45000, 55000,  65000,  75000,  85000,  95000,  105000, 115000,  125000,  135000,  145000, 155000, .default = NULL, .missing = NULL))
+
+
+
+datag <- datz %>% filter(Q297 != 1)
+datagp <- datag %>% filter(Q297 != 2)
+datagpa <- datagp %>% filter(Q297 != 3)
+datagpa2 <- datagpa %>% filter(Q297 != 8)
+
+
+datagpa2<- datagpa2%>% mutate(recodedgpa=recode(Q297, 1, 1.25,1.75,2.25,2.75, 3.25, 3.75, .default = NULL, .missing = NULL))
+surveydata <- datagpa2
+surveydata <- surveydata %>% dplyr::select(PA_GEN, PA_AGE, LIVEWT, CH_GEN,  PA_EDU, PART_EDU, MARSTAT,TOTIVP, CRPR_TOT, RAC_SOC, CUL_SOC, MMRI, vicarious, pdisc, cdisc, TOTRCON, Q232, Q233, totbpi, NEIGHCOMP, JOBCOMP, SCHCOMP, recodedincome, recodedgpa, COUNTRY )
+
+
+
+#lets see what these look like 
+surveydata %>% group_by(recodedgpa) %>% drop_na(pdisc,cdisc,TOTIVP,TOTRCON,totbpi, recodedincome, vicarious,RAC_SOC, CUL_SOC, MMRI,)%>%
+  summarize(n = n(),mean(recodedincome), mean(pdisc), mean(cdisc), mean(TOTIVP),mean(TOTRCON),   mean(totbpi)) %>% glimpse()
+
+
+
+```
+I was interested in exploring how several variables differ among the children with different grade point averages. Here, the mean income, personal discrimination of the parent, child discrimination, involved vigilant parenting, racial concerns and behavior problem index scores are separated by GPA classifications where the lowest group is from 2-2.5, the next group is 2.5-3, then 3-3.5 and finally 3.5-4.
+
+
+
+```{r}
+library(mvnormtest)
+
+#Normality-- fails this assumption.
+check <- surveydata %>% dplyr::select(pdisc, cdisc, recodedincome, totbpi, vicarious, TOTRCON, TOTIVP, RAC_SOC, CUL_SOC, MMRI, recodedgpa)
+C <- t(check[1:100,1:10])
+mshapiro.test(C)
+
+
+
+
+#variance in each of the groups, use .001 since very sensitive test-- cdisc fails. 
+bartlett.test(check$cdisc, check$recodedgpa) 
+bartlett.test(check$pdisc, check$recodedgpa) 
+bartlett.test(check$recodedincome, check$recodedgpa) 
+bartlett.test(check$totbpi, check$recodedgpa) 
+bartlett.test(check$vicarious, check$recodedgpa) 
+bartlett.test(check$TOTRCON, check$recodedgpa) 
+bartlett.test(check$TOTIVP, check$recodedgpa) 
+bartlett.test(check$RAC_SOC, check$recodedgpa) 
+bartlett.test(check$CUL_SOC, check$recodedgpa) 
+bartlett.test(check$MMRI, check$recodedgpa) 
+
+
+#manova
+
+
+man<-manova(cbind(pdisc,cdisc,vicarious,TOTRCON, TOTIVP,  totbpi,recodedincome,RAC_SOC, CUL_SOC,MMRI)~recodedgpa, data=surveydata)
+            
+summary(man)
+
+summary.aov(man)
+
+
+# pdisc, cdisc, TOTIVP, totbpi, income, RAC_SOC, CUL_SOC and MMRI all significant-- post hocs for each
+pairwise.t.test(surveydata$pdisc, surveydata$recodedgpa, p.adj = "none")
+
+
+pairwise.t.test(surveydata$cdisc, surveydata$recodedgpa, p.adj = "none")
+
+
+pairwise.t.test(surveydata$TOTIVP, surveydata$recodedgpa, p.adj = "none")
+
+
+pairwise.t.test(surveydata$recodedincome, surveydata$recodedgpa, p.adj = "none")
+
+
+pairwise.t.test(surveydata$RAC_SOC, surveydata$recodedgpa, p.adj = "none")
+
+
+pairwise.t.test(surveydata$CUL_SOC, surveydata$recodedgpa, p.adj = "none")
+
+
+pairwise.t.test(surveydata$totbpi, surveydata$recodedgpa, p.adj = "none")
+
+
+pairwise.t.test(surveydata$MMRI, surveydata$recodedgpa, p.adj = "none")
+
+
+
+#Calculate number of tests run:
+# 1 manova, 10 anovas, each pairwise test runs 6, so 8*6 = 48, so 48+10+1 = 59 tests total
+
+#chance of type 1 error
+1 - ((0.95)^59)
+
+#So we must use correction
+.05/59 #new alpha
+
+check %>% ggplot(aes(recodedgpa,totbpi,fill=recodedgpa))+geom_bar(stat="summary")+
+  geom_errorbar(stat="summary") +coord_flip()+ylab("total bpi score")+theme(legend.position = "none")
+ 
+
+check %>% ggplot(aes(recodedgpa,cdisc,fill=recodedgpa))+geom_bar(stat="summary")+
+  geom_errorbar(stat="summary") +coord_flip()+ylab("cdisc score")+theme(legend.position = "none")
+ 
+```
+Null Hypothesis:  For the ten measures, means of each GPA grouping are equal.
+Alternative: For at least one dependent variable, at least one GPA grouping mean is different.
+
+In order to test whether the mean income, personal discrimination of the parent, child discrimination, vicarious discrimination, involved vigilant parenting, racial concerns, racial socialization scores, cultural socialization scores, racial identity score, and behavior problem index scores differ across GPA categories, I ran a multivariate analysis of variance, or MANOVA. The MANOVA found that these groups did significantly differ on the 10 measures (Pillai trace = 0.18118, F(1,491)=  10.665, p< 2.2e-16). Univariate analyses of variance (ANOVAs) for each  dependent variable were conducted as follow-up tests to the MANOVA, and using the Bonferroni method for controlling the Type I error, the univariate ANOVA for problem behaviors (F(1,491)=  86.041, p < 2.2e-16)) and child discrimination (F(1,491)=  13.703, p= 0.0002384)) were significant. 
+
+Post hoc analysis was performed, conducting pairwise comparisons to determine which GPA groups differed in  'totbpi', and 'cdisc'. After adjusting for multiple comparisons (bonferroni), due to the type 1 error rate of 0.9515055, the total bpi still significantly differed between the 2.0- 2.5 group to the 3.0-3.5 and 3.5-4.0 groups and the 2.5-3.0 group significantly differed from the 3.0-3.5 and 3.5-4.0 groups as well. 
+
+The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc. 
+
+```{r}
+
+#Randomization Test
+#Do mothers or fathers experience more racial discrimination?
+#Male = 1, Female = 2
+Mother <- surveydata %>% filter(PA_GEN == 2)
+Father<-surveydata %>% filter(PA_GEN == 1)
+
+
+hist(Mother$pdisc)
+hist(Father$pdisc)
+
+
+#the group difference     
+
+  
+mean(Mother$pdisc, na.rm=T) - mean(Father$pdisc, na.rm=T)
+surveydataMF <- surveydata %>% drop_na(pdisc)
+
+#randomization!
+set.seed(348)
+rand_distribution <- vector()
+for (i in 1:5000) {
+  new <- data.frame(pdisc = sample(surveydataMF$pdisc), gender = surveydataMF$PA_GEN)
+  rand_distribution[i] <- mean(new[new$gender == "2", ]$pdisc) -
+    mean(new[new$gender == "1", ]$pdisc)
+}
+
+#create the histogram of the distribution with our test statistic
+{
+  hist(rand_distribution, main = "", ylab = "")
+  abline(v =-0.2335992, col = "red")
+}
+
+mean(rand_distribution > abs(-0.2335992)) * 2 #pvalue < alpha, significant
+
+
+#comparison to ttest
+t.test(pdisc~PA_GEN, data = surveydata)
+
+
+
+
+```
+Do mothers or fathers experience more personal discrimination on average?
+Null Hypothesis: There is no difference in the average rate of personal discrimination based on gender.
+Alternative Hypothesis: Mothers and fathers receive different amounts of personal discrimination on average.
+Assumptions for the independent t-test were violated, so we use randomization. 
+The actual mean difference between the groups was found to be -0.2335992 (when subtracting fathers from mothers). After running the randomization test, a p-value of.0308 was found and can be visualized by the two red lines on the distibution above. Since the p-value is less than our alpha of .05, we can conclude that there is a significant difference in the amount of personal discrimination that mothers and fathers face. Fathers face significantly more discrimination when compared to mothers. 
+
+
+
+```{r}
+surveydata <- surveydata
+surveydata$SCHCOMP <- factor(surveydata$SCHCOMP)
+surveydata$cdisc_centered = surveydata$cdisc-mean(surveydata$cdisc, na.rm = T)
+
+surveydata <- surveydata %>% filter(SCHCOMP != 6)
+
+fitbpi<- lm(totbpi ~ cdisc_centered*SCHCOMP, data = surveydata)
+summary(fitbpi)
+
+
+
+
+# Confirm linearity of numeric predictors
+surveydata%>% ggplot(aes(cdisc_centered,totbpi))+ geom_point()
+
+
+
+# Confirm normality of residuals
+hist(fitbpi$residuals, main = "Model Residuals", xlab = "Residual", 
+    col = "light grey", right = F)
+
+# Confirm equal variance, seems to be fanning out 
+plot(fitbpi$fitted.values, fitbpi$residuals, xlab = "Fitted Values", 
+    ylab = "Residuals", main = "Residual Plot", pch = 20)
+abline(h = 0, col = "red")
+
+
+
+```
+
+
+ I was interested in what variables contribute to the scores of the behavior problem index in children. I created a linear regression model to see how much variation in bpi can be explained by the child's school's racial composition, as well as their exposure to discrimination. For a black child who receives an average amount of discrimination at a school that is almost all black, their estimated score for the behavior problem index is 12.3032. While holding school composition constant, the score on the bpi increases by 5.5176 for every 1 unit increase of discrimination the child receives. The school composition variable is on a scale of 1-5 where a score of 1 means the school is mostly black while 5 means the school is hardly black. With this scale in mind, while holding discrimination constant, a school that is mostly black has a decrease in bpi of 3.7842. While holding discrimination constant, a school that is about half black has a decrease in bpi of 4.3260. While holding discrimination constant, a school that has a few other black children has a decrease in bpi of 4.7530. Finally, while holding discrimination constant, a school that has almost no other black children has the largest decrease in bpi of at 5.5801. There is -3.2847 is a difference in slopes for the 4th category of school composition and cdisc. The interactions with each dependent variable on the x-axis are provided in order to help visualize these coefficients. This data however failed the linearity and equal variance assumptions, which is a limitation that will be adjusted for on future steps. This model explains 25.2% of the difference in total bpi. Therefore, discrimination and school composition do contribute to bpi scores, but there is still a large amount of the variation unaccounted for by this model.
+
+
+
+
+```{r}
+
+fitbpi %>% ggplot(aes(cdisc_centered, totbpi)) + geom_smooth(method= "lm", aes(color= SCHCOMP), se= F) 
+
+
+
+```
+
+In this plot, a school composition that was almost all black (1) is shown with the red line, a school that was mostly black (2) was shown by the yellow line, a school that was about half black (3) was shown in green, a school that has a few black students (4) was shown in blue, and a school with close to no other black students (5) is shown in purple. The graph illustrates that at every school, children who were exposed to more discrimination were likely to have a higher score for bpi. This plot also shows that as the schools become less black, the students likely have lower scores on the total behavior problem index. This was the opposite of what I originally expected to see, because I hypothesized that for the black students, a school with a greater number of people who look like them would have a postive impact on their bpi. This opposite effect is likely due to another variable we are not looking into, such as the school's resources, which may be benefitting the black children even at a school where they are in the minority.
+
+
+```{r}
+library(sandwich)
+fitbpi %>% ggplot(aes(cdisc_centered, totbpi)) + geom_point() + geom_smooth(method = "lm",
+se = F) #seems to be fanning out
+
+
+bptest(fitbpi) #fails homoskedasity, need to recompute with robust errors
+
+coeftest(fitbpi, vcov = vcovHC(fitbpi))
+
+```
+This is a plot of the regression with bpi on the y axis and cdisc on the x axis. There does seem to be some fanning out occuring, and therefore failing the homoskedasticity assumption. After running the Breusch-Pagan Test, it was confirmed that the homoskedasticity assumption was failed with a p value of 4.941e-11. The test was then re-run with robust standard errors. All of the same coeffieicents are still significant as above before the correction.
+
+
+```{r}
+# Compute bootstrapped SE
+cdisc_centered<- surveydata$cdisc_centered
+SCHCOMP <- surveydata$SCHCOMP
+totbpi <- surveydata$totbpi
+
+surveydatab <- cbind.data.frame(cdisc_centered, SCHCOMP, totbpi)
+surveydatab<- surveydatab %>% na.omit()
+
+samp_distn <- replicate(5000, {
+data_strapped  <- surveydatab[sample(nrow(surveydatab), replace = TRUE), ]
+fitboot <- lm(totbpi ~ cdisc_centered*SCHCOMP, data = data_strapped)
+coef(fitboot)
+})
+## Estimated SEs
+
+samp_distn %>% t %>% as.data.frame %>% summarize_all(sd)
+
+```
+The bootstrapped standard errors are almost identical to, but slightly smaller than those from both tests above.
+
+
+```{r}
+surveydata$SCHCOMP <- factor(surveydata$SCHCOMP)
+surveydata$MARSTAT <- factor(surveydata$MARSTAT)
+
+surveydata <- surveydata %>% drop_na(totbpi)
+surveybpi<- surveydata %>% mutate(totbpi = ifelse(totbpi >= mean(totbpi), 1, 0))
+surveybpi <- surveybpi%>% drop_na(recodedgpa, cdisc_centered,SCHCOMP,MARSTAT)
+
+fitbpi <- glm(totbpi ~ recodedgpa+ cdisc_centered +SCHCOMP+MARSTAT, data = surveybpi, family = "binomial")
+coeftest(fitbpi)
+exp(coef(fitbpi))
+```
+In order to run a logistic regression, I created a binary variable from the totbpi variable by categorizing scores as either above or below the mean. With this new variable, I wanted to model that probability that a student would have a higher than average, or lower than average bpi score.  With this model, I attempt to predict a student's bpi catergorization using their gpa, their exposure to discrimination, their school's composition, and their parents marital status. The intercept is the odds of a student having a higher than average bpi with a gpa of 0, a cdisc of 0, a school that is all black and parents that have never been married. Holding cdisc, school compostion, and parent's marital status constant, one-unit increase in gpa multiplies the odds of having a higher than average bpi score by a factor of 0.2082576. Holding gpa, school compostion, and parent's marital status constant, one-unit increase in a child's discrimination score multiplies the odds of having a higher than average bpi score by a factor of 1.8204486. Holding cdisc, school gpa, and parent's marital status constant, having a school that is about half black multiplies the odds of having a higher than average bpi score by a factor of .3692654. Holding cdisc, school gpa, and parent's marital status constant, having a school that has a few other black students multiplies the odds of having a higher than average bpi score by a factor of .4715272. Holding cdisc, school gpa, and parent's marital status constant, having a school that has almost no other black students multiplies the odds of having a higher than average bpi score by a factor of .2861590.
+
+
+
+
+```{r}
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+
+
+surveybpi$prob <- predict(fitbpi, type = "response")
+table(predict = as.numeric(surveybpi$prob > 0.5), truth = surveybpi$totbpi) %>%
+  addmargins
+class_diag(surveybpi$prob, truth = surveybpi$totbpi)
+```
+The confusion matrix shows that the model does a better job of classifying negatives than positives. This is confirmed by the high specificity, or true negative rate given as 0.8757962. The sensitivity, or true positive rate is much lower at 0.4367816. The accuracy of this model is 0.7192623. The positive predictive value, or precison is 0.6608696	and the area under the curve (AUC) is 0.7630225. The AUC represents the probability that a randomly selected child with a higher than average bpi score has a higher prediction than a randomly selected child with a lower than average bpi score. So, 0.7630225 is a pretty decent AUC.
+
+
+
+```{r}
+logit <- predict(fitbpi, response = "logit")
+
+surveybpi <- surveybpi %>%drop_na(totbpi)
+surveybpi$bpi_Cat <- ifelse(surveybpi$totbpi > mean(surveybpi$totbpi), "above mean", "below mean")
+
+
+ggplot(surveybpi,aes(x= logit,fill=bpi_Cat))+geom_density(alpha=.75)
+
+```
+This graph is a visualization of what the model is predicting in each category. Everything that is being predicted as above the mean is shown in pink. Everything being categorized as below the mean is shown in blue. Everything in grey has been miscategorized. To the right of 0, gray is proportion of below the mean that we predicted above it (false positives). To the left of 0, gray is proportion of above the mean that we predicted below it (false negatives).
+
+
+
+
+```{r}
+
+ROCplot <- ggplot(surveybpi) + geom_roc(aes(d = totbpi, m = prob), n.cuts = 0)
+ROCplot
+calc_auc(ROCplot)
+
+```
+This graph is the ROC (receiver operating characteristic) curve of our model. The area under the curve (AUC) of 
+0.7630225	quantifies how well the model is predicting overall. Since ours is found in the range of .7-.8, it is doing a fair job.
+
+
+
+```{r}
+
+set.seed(1234)
+k=10
+
+data1<-surveybpi[sample(nrow(surveybpi)),] #randomly order rows
+folds<-cut(seq(1:nrow(surveybpi)),breaks=k,labels=F) #create folds
+
+diags<-NULL
+for(i in 1:k){
+  ## Create training and test sets
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,]
+  truth<-test$totbpi
+  
+  ## Train model on training set
+  fit<-glm(totbpi ~ recodedgpa+ cdisc_centered +SCHCOMP+MARSTAT, data = train, family = "binomial" )
+  probs<-predict(fit,newdata = test,type="response")
+  ## Test model on test set (save all k results)
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+
+
+apply(diags,2,mean) #average across all k results
+
+
+
+
+
+
+
+
+```
+A 10-fold cross validation was performed to test model's ability to predict new data that was not used to estimate it. The values are very similar to those before, but are slightly more conservative. The accuracy is now 0.7213010, the sensitivity is 0.4375142, the specificity is 0.8736509, the precision is 0.6571054, and the AUC is 0.7308493. The AUC is slightly lower with the new data, but it is still very similar to the in-sample data. So, a child's school composition and experiences of discrimination are decent predictors of their bpi. 
+
+
+
+
+
+```{r}
+library(glmnet) 
+surveydata$SCHCOMP <- factor(surveydata$SCHCOMP)
+surveydata$MARSTAT <- factor(surveydata$MARSTAT)
+surveydata$PA_EDU <- factor(surveydata$PA_EDU)
+surveydata$PART_EDU <- factor(surveydata$PART_EDU)
+surveydata$NEIGHCOMP <- factor(surveydata$NEIGHCOMP)
+surveydata$JOBCOMP <- factor(surveydata$JOBCOMP)
+surveydata$LIVEWT <- factor(surveydata$LIVEWT)
+surveydata$CH_GEN <- factor(surveydata$CH_GEN)
+
+
+surveydata <- surveydata %>% drop_na(totbpi)
+surveybpi<- surveydata %>% mutate(totbpi = ifelse(totbpi >= mean(totbpi), 1, 0))
+surveybpi <- surveybpi%>% drop_na(PA_AGE, LIVEWT, CH_GEN,  PA_EDU, PART_EDU, MARSTAT,   TOTIVP, CRPR_TOT, RAC_SOC, CUL_SOC, MMRI, vicarious, pdisc, cdisc, TOTRCON, Q232, Q233, totbpi,recodedgpa, NEIGHCOMP, JOBCOMP, SCHCOMP, recodedincome,  COUNTRY, cdisc_centered )
+
+surveybpi <- surveybpi %>% dplyr::select(-cdisc)
+               
+set.seed(1234)
+
+fiteverything <- glm(totbpi~., data = surveybpi, family = "binomial")
+y<-as.matrix(surveybpi$totbpi)  ###save response variable 
+x<-model.matrix(fiteverything)    ###save matrix of all predictors (dropping the response variable)
+x<- x[,-1]
+
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+
+
+
+
+#plug in only what was significant
+surveylasso <- surveybpi
+surveylasso$PART_EDU4 <- ifelse(surveylasso$PART_EDU == "4", 1,0)
+
+set.seed(1234)
+k=10
+
+data1<-surveylasso[sample(nrow(surveylasso)),] #randomly order rows
+folds<-cut(seq(1:nrow(surveylasso)),breaks=k,labels=F) #create folds
+
+diags<-NULL
+for(i in 1:k){
+  ## Create training and test sets
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,]
+  truth<-test$totbpi
+  
+  ## Train model on training set
+  fit<-glm(totbpi ~ PART_EDU4 + MMRI +pdisc + cdisc_centered+ recodedgpa, data = train, family = "binomial" )
+  probs<-predict(fit,newdata = test,type="response")
+  ## Test model on test set (save all k results)
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+
+
+apply(diags,2,mean) #average across all k results
+
+
+
+
+
+
+
+
+```
+
+After running a lasso-regression, the coefficients that are non-zero for predicting whether a person has higher or lower than average bpi score are PART_EDU4 (partner's highest education level is some college),  MMRI (racial identity score), pdisc, cdisc_centered, and recodedgpa. Plugging in these variables into a cross validation improves the results of our model, and it is doing a pretty good job of predicting which bpi category a child falls in. The accuracy is 0.7499390, sensitivity (true positive rate) is 0.5577210, specificity (true negative rate) is 0.8659588, precision (postitive predictive value) is 0.7140565 and the area under the curve is 0.8007965.
+
+
+
+
+
+```{r}
+
+
+surveydata$pdisc_centered = surveydata$pdisc-mean(surveydata$pdisc, na.rm = T)
+
+
+Income<- surveydata %>% mutate(recodedincome = ifelse(recodedincome >= mean(recodedincome), 1, 0))
+Income <- Income%>% drop_na(PA_EDU, PA_GEN, pdisc_centered,  recodedincome, vicarious, PART_EDU)
+Income$PA_EDU <- factor(Income$PA_EDU)
+Income$PA_GEN <- factor(Income$PA_GEN)
+
+fitinc <- glm(recodedincome ~ PA_EDU+ PART_EDU, data = Income, family = "binomial")
+coeftest(fitinc)
+exp(coeftest(fitinc))
+
+
+
+
+```
+
+```{r}
+Income$prob <- predict(fitinc, type = "response")
+table(predict = as.numeric(Income$prob > 0.5), truth = Income$recodedincome) %>%
+  addmargins
+class_diag(Income$prob, truth = Income$recodedincome)
+
+logit <- predict(fitinc, response = "logit")
+
+Income <- Income %>%drop_na(recodedincome)
+Income$Income_Cat <- ifelse(Income$recodedincome > mean(Income$recodedincome), "above mean", "below mean")
+
+
+ggplot(Income,aes(x= logit,fill=Income_Cat))+geom_density(alpha=.75)
+
+
+ROCplot <- ggplot(Income) + geom_roc(aes(d = recodedincome, m = prob), n.cuts = 0)
+ROCplot
+calc_auc(ROCplot)
+
+```
+
+I was interested in seeing if I could predict whether a family would be expected to have an income above or below average, solely based on the education levels of the mother and father. These factors alone had an accuracy of 0.7201946, a sensitivity of 0.6486486, a specificity of 0.7787611	, a precision of 0.7058824, and an AUC of 0.7912102.  The AUC represents the probability that a randomly selected parent with a higher than average income has a higher prediction than a randomly selected parent with a lower than average avaerage. So,with an AUC of 0.7912102, this model is performing well. The intercept shows that the reference group of parents who did not complete junior high have and odds of .0000001319 of making an income above the average. However, when both parents have doctoral degrees, the odds of them making above an average income are 32,627,353 times the odds of parents who did not finish junior high.
+
+
+```{r}
+
+set.seed(1234)
+k=10
+
+data1<-Income[sample(nrow(Income)),] #randomly order rows
+folds<-cut(seq(1:nrow(Income)),breaks=k,labels=F) #create folds
+
+diags<-NULL
+for(i in 1:k){
+  ## Create training and test sets
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,]
+  truth<-test$recodedincome
+  
+  ## Train model on training set
+  fit<-glm(recodedincome ~ PA_EDU+ PART_EDU, data = train, family = "binomial" )
+  probs<-predict(fit,newdata = test,type="response")
+  ## Test model on test set (save all k results)
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+
+
+apply(diags,2,mean) #average across all k results
+
+
+```
+The logistic regression for the model with out of sample data. The results from this cross validation are lower than the values from above with an accuracy of 0.7153891, a sensitiviy of 0.6397746, a specificity of 0.7784177, a precision of 0.7080453 and an AUC of 0.0.7588930. This is likely due to the high number of categories that the parents could fall into in education (9 categories each). This model is doing a decent job of catergorizing household incomes as either above or below the mean based on education levels, but in the next step, removing some of these excess variables should help remove the noise that the model was picking up on.
+
+
+```{r}
+
+
+Income$SCHCOMP <- factor(Income$SCHCOMP)
+Income$MARSTAT <- factor(Income$MARSTAT)
+Income$PA_EDU <- factor(Income$PA_EDU)
+Income$PART_EDU <- factor(Income$PART_EDU)
+Income$NEIGHCOMP <- factor(Income$NEIGHCOMP)
+Income$JOBCOMP <- factor(Income$JOBCOMP)
+Income$LIVEWT <- factor(Income$LIVEWT)
+Income$CH_GEN <- factor(Income$CH_GEN)
+
+
+
+
+surveydata <- surveydata %>% drop_na(recodedincome)
+surveyinc<- surveydata %>% mutate(recodedincome = ifelse(recodedincome > mean(recodedincome), 1, 0))
+surveyinc <- surveyinc %>% filter(JOBCOMP != 6)
+surveyinc <- surveyinc%>% drop_na(PA_AGE, LIVEWT, CH_GEN,  PA_EDU, PART_EDU, MARSTAT,   TOTIVP, CRPR_TOT, RAC_SOC, CUL_SOC, MMRI, vicarious, pdisc, cdisc, TOTRCON, Q232, Q233, totbpi,recodedgpa, NEIGHCOMP, JOBCOMP, SCHCOMP, recodedincome,  COUNTRY )
+                                  
+
+set.seed(1234)
+fiteverything <- glm(recodedincome~., data = surveyinc, family = "binomial")
+y<-as.matrix(surveyinc$recodedincome)  ###save response variable 
+x<-model.matrix(fiteverything)    ###save matrix of all predictors (dropping the response variable)
+x<- x[,-1]
+
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+surveyinc$PA_EDU3 <- ifelse(surveyinc$PA_EDU == "3", 1,0)
+surveyinc$PA_EDU4 <- ifelse(surveyinc$PA_EDU == "4", 1,0)
+surveyinc$PA_EDU5 <- ifelse(surveyinc$PA_EDU == "5", 1,0)
+surveyinc$PA_EDU9 <- ifelse(surveyinc$PA_EDU == "9", 1,0)
+
+surveyinc$PART_EDU2 <- ifelse(surveyinc$PART_EDU == "2", 1,0)
+surveyinc$PART_EDU3 <- ifelse(surveyinc$PART_EDU == "3", 1,0)
+surveyinc$PART_EDU7 <- ifelse(surveyinc$PART_EDU == "7", 1,0)
+surveyinc$PART_EDU8 <- ifelse(surveyinc$PART_EDU == "8", 1,0)
+surveyinc$PART_EDU6 <- ifelse(surveyinc$PART_EDU == "6", 1,0)
+
+surveyinc$MARSTAT2 <- ifelse(surveyinc$MARSTAT == "2", 1,0)
+
+
+set.seed(1234)
+k=10
+
+data1<-surveyinc[sample(nrow(surveyinc)),] #randomly order rows
+folds<-cut(seq(1:nrow(surveyinc)),breaks=k,labels=F) #create folds
+
+diags<-NULL
+for(i in 1:k){
+  ## Create training and test sets
+  train<-data1[folds!=i,] 
+  test<-data1[folds==i,]
+  truth<-test$recodedincome
+  
+  ## Train model on training set
+  fit<-glm(recodedincome ~ PA_EDU3+ PA_EDU4 + PA_EDU5+ PA_EDU9 + PART_EDU2+ PART_EDU3+ PART_EDU7+ PART_EDU8+ PART_EDU6+ MARSTAT2, data = train, family = "binomial" )
+  probs<-predict(fit,newdata = test,type="response")
+  ## Test model on test set (save all k results)
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+
+
+apply(diags,2,mean) #average across all k results
+
+
+
+```
+By running the lasso regression, the model is better overall. The accuracy is 0.7438655, the sensitivity is 0.7349330, the specificity is 0.7436869, the precision is 0.7202001, and the AUC is now 0.8169085. The only variables with non-zero coefficients for this lasso regression were: if the parent is currently married, if the parent graduated HS, if the parent dropped out of college before an associate's degree, if the parent obtained their associate's degree, if the parent obtained a doctoral degree, if the partner dropped out of HS, if the partner finished HS, if the partner obtained their bachelor's degree, some graduate school, and obtained their master's degree. One point of interest is that for the PA_EDU, obtaining a bachelor's degree was not significant when compared to the others and for the PART_EDU, obtaining a bachelor's degree was significant, but its coefficient was still very small. This emphasizes how obtaining a bachelor's degree is no longer a super strong indicator of income, and instead in most cases it takes graduate level education to achieve higher levels of income. 
+
+
+```{r}
+
+
+surveygpa <- surveydata %>% drop_na(recodedgpa)
+surveygpa<- surveygpa %>% mutate(recodedgpa = ifelse(recodedgpa >= mean(recodedgpa), 1, 0))
+
+
+surveygpa <- surveygpa%>% drop_na(PA_AGE, LIVEWT, CH_GEN,  PA_EDU, PART_EDU, MARSTAT,   TOTIVP, CRPR_TOT, RAC_SOC, CUL_SOC, MMRI, vicarious, pdisc, cdisc, TOTRCON, Q232, Q233, totbpi,recodedgpa, NEIGHCOMP, JOBCOMP, SCHCOMP, recodedincome,  COUNTRY )
+                                  
+
+set.seed(348)
+fiteverything <- glm(recodedgpa~., data = surveygpa, family = "binomial")
+y<-as.matrix(surveygpa$recodedgpa)  ###save response variable 
+x<-model.matrix(fiteverything)    ###save matrix of all predictors (dropping the response variable)
+x<- x[,-1]
+
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+
+```
+One last thing that I wanted to illustrate is the importance of the bpi (behavior problem index).  I did, however, end up running a lasso regression just to see what variables are significant predictors of a child's GPA. It turns out that bpi was the only important predictor. This was similar to the result in the original MANOVA where the total bpi is the only numeric variable that was significantly different among GPA groupings. A child's bpi score was modeled extensively above, and this lasso regression reveals just how influential it can be on a child's GPA compared to not just the numeric variables but also the categorical variables. Since the bpi score targets topics such as depression, anxiety, and sociality, these results emphasize how important mental health is to a child's academic performance.
+
+```{R, echo=F}
+## DO NOT DELETE THIS BLOCK!
+sessionInfo()
+Sys.time()
+Sys.info()
+```
