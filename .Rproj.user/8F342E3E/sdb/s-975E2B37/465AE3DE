@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "baseurl = \"https://example.com/\"\nlanguageCode = \"en-US\"\ntitle = \"Chris Turner\"\n# Enable comments by entering your Disqus shortname\ndisqusShortname = \"\"\n# Enable Google Analytics by entering your tracking code\ngoogleAnalytics = \"\"\ntheme = \"hugo-sustain\"\n\n[permalinks]\n  post = \"/:year/:month/:day/:slug\"\n\n[params]\n  avatar = \"profile.png\"\n  author = \"Chris Turner\"\n  description = \"Describe your website\"\n\n  # Custom assets can be linked with their paths relative to static/\n  custom_css = []\n  custom_js  = []\n\n[params.social]\n  Github        = \"username\"\n  Email         = \"email@example.com\"\n  Twitter       = \"username\"\n  LinkedIn      = \"username\"\n  Stackoverflow = \"username\"\n  Medium        = \"username\"\n  Telegram      = \"username\"\n\n## Main Menu\n[[menu.main]]\n  name = \"blog\"\n  weight = 100\n  identifier = \"blog\"\n  url = \"/blog/\"\n[[menu.main]]\n  name = \"projects\"\n  identifier = \"projects\"\n  weight = 200\n  url = \"/projects/\"\n[[menu.main]]\n  name = \"resume\"\n  identifier = \"resume\"\n  weight = 300\n  url = \"/resume/\"\n",
+    "created" : 1575595869943.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3271220903",
+    "id" : "465AE3DE",
+    "lastKnownWriteTime" : 1575499749,
+    "last_content_update" : 1575499749,
+    "path" : "~/Desktop/website/themes/hugo-sustain/exampleSite/config.toml",
+    "project_path" : "themes/hugo-sustain/exampleSite/config.toml",
+    "properties" : {
+    },
+    "relative_order" : 16,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "text"
+}
