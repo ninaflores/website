@@ -23,12 +23,12 @@
   </url>
   
   <url>
-    <loc>/categories/projects/</loc>
+    <loc>/tags/projects/</loc>
     <lastmod>2016-10-02T22:55:05-04:00</lastmod>
   </url>
   
   <url>
-    <loc>/tags/projects/</loc>
+    <loc>/categories/projects/</loc>
     <lastmod>2016-10-02T22:55:05-04:00</lastmod>
   </url>
   
@@ -74,6 +74,11 @@
   
   <url>
     <loc>/resume/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/resume1/</loc>
     <priority>0</priority>
   </url>
   

@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "{{ partial \"head\" . }}\n  <body>\n    <div id=\"wrap\">\n      {{ partial \"header\" . }}\n      <section id=\"about\">\n        <div class=\"container\">\n        <div class=\"avatar\">\n          <img class=\"img-circle\" src=\"{{ .Site.BaseURL }}img/{{ .Site.Params.avatar }}\" alt=\"Responsive image\">\n        </div>\n        <h3>I'm <strong>{{ .Site.Params.author }}</strong>, a Computational Biologist.</h3>\n        <h3>I love the intersection of the natural sciences with computer science and statistics.</h3>\n        <h3>Have a look at some of my working <a href=\"{{ .Site.BaseURL }}projects/\"> projects</a>.</h3>\n        <h3>For more check out my academic &amp; professional <a href=\"https://demo.nurlan.co/hugo-vitae/\">resume</a>.</h3>\n        <h3>Contact me at <a href=\"http://twitter.com/{{ .Site.Params.Social.Twitter }}\">@{{ .Site.Params.Social.Twitter }}</a> or by <a href=\"mailto:{{ .Site.Params.Social.Email }}\">email</a>.</h3>\n        {{ partial \"social.html\" . }}\n        </div>\n      </section>\n    </div>\n    {{ partial \"footer\" . }}\n  </body>\n</html>\n",
+    "created" : 1575739750368.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1703718465",
+    "id" : "BE4BADCD",
+    "lastKnownWriteTime" : 1575739898,
+    "last_content_update" : 1575739898510,
+    "path" : "~/Desktop/website/themes/hugo-sustain/layouts/index.html",
+    "project_path" : "themes/hugo-sustain/layouts/index.html",
+    "properties" : {
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "html"
+}

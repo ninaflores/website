@@ -1,98 +1,10 @@
+---
+title: "resume"
+output: html_document
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
-###Nina M. Flores
-nina.m.flores@icloud.com
-817.789.5900
-Austin, TX
-###EDUCATION
-UNIVERSITY OF TEXAS								
-Austin, TX
-Bachelor of Science in Computational Biology	*May 2020*
-Certificate in Scientific Computation and Data Sciences
-College of Natural Sciences
-Overall GPA: *3.91/4.00*
-
-###RESEARCH EXPERIENCE
-9/2019-Current	*Research Assistant/Data Analyst, African American Resilience in Context Lab, University of Texas Department of Human Development and Family Sciences, Austin, TX*
-	Advisor: Dr. Fatima Varner
-•	Collaborate with PI to create personal project of conducting randomization, MANOVA, regression, and logistic regression tests on relationships of interest.
-•	Screen 40-75 scientific abstracts per week for inclusion/exclusion criteria in a meta-analysis targeting school-based marginalization. 
-4/2019-Current	*Research Assistant, Keitt Lab, University of Texas Department of Integrative Biology, Austin, TX*
-	Advisor: Dr. Tim Keitt
-•	Collaborate with 5 team members to digitalize 200+ routes from the North American Bird Breeding Survey utilizing R and GIS to visualize spatial distribution. 
-•	Investigate macroecological outcomes of habitat expansion such as climate change impacts, biogeographic patterns, and ecosystem function.
-7/2019-8/2019 	*Research Intern, One Ocean Conservation, Haleiwa, HI*
-•	Collected data on sharks such as species, count, gender, and displays of dominant behavior (parallel swimming, following, chasing, pectoral dropping, jaw gaping, etc.) under the guidance of shark behaviorists and marine biologists.
-•	Identified a pattern between the presence of galapagos versus sandbar sharks and their relationships to seasonal changes; graphed the discovered correlation in R using current data (January 2015 – July 2018) for use in presentations and educational outreach programs. 
-1/2019-6/2019		*Research Assistant, Virtual Drug Screening, University of Texas Austin*
-			Advisor: Dr. Josh Beckham
-•	Discovered two potential novel inhibitors of NDM-1 by sifting through libraries of chemical structures using GOLD. 
-•	Performed cloning, transformation, expression, purification (using Ni2+-NTA affinity and ion-exchange chromatography), differential scanning fluorimetry, and enzyme assays to test the top 5 ligands generated from GOLD for binding against NDM-1.
-
-###TEACHING EXPERIENCE
-Fall 2019		*Course Assistant* – Biostatistics (Prof. Sally Ragsdale)
-*All Biostatistics courses- Responsibilities include grading all homework and lab work, providing students with feedback on their work in the course, and fielding questions about material during lab and lecture.*
-
-Summer 2019	*Course Assistant* – Introduction to GIS (Prof. Jennifer Miller), Summer Statistics Institute
-
-Spring 2019		*Course Assistant* – Biostatistics (Prof. Abhra Sarkar)
-
-Fall 2018		*Course Assistant* – Biostatistics (Prof. Nathaniel Woodward)
-
-Summer 2018		*Project Assistant* in Biostatistics curriculum re-design 
-			Advisors: Dr. Kristin Harvey and Sally Ragsdale
-•	Emphasized ethics and teamwork skills by implementing an Ethics and Leadership flag (over 30% of material exposes students to ethical issues and reasoning) and group work (lab sessions were shifted from individual coding assignments to team-based projects analyzing datasets with R to answer original research questions) into the course. 
-•	Collaborated with project advisors to improve materials such as homework assignments, answer keys, course websites, visual aids, laboratory assignments, and supplementary notes for the course.
-
-Summer 2018	*Course Assistant* – Introduction to Statistics (Prof. Kristin Harvey), Summer Statistics Institute
-
-Spring 2018		*Course Assistant* –Introduction to SQL
-
-Spring 2018		Course Assistant – Biostatistics (Prof. Lauren Blondeau)
-
-###WORK EXPERIENCE
-04/2019-Current	*PrEP Technician*, Community, Walgreens Local Specialty Pharmacy
-•	Manage medication for pre-exposure prophylaxis patients.
-•	Communicate with doctors, nurses, patients, and insurance company staff to ensure patients wellbeing.
-###HONORS & AWARDS
-2016-2019		University Honors List
-2016-2019		Alpha Phi Sigma Honor Society Member
-2018			Nellie Mae Gilbert Memorial Endowed Presidential Scholarship Recipient
-2016-2017		Athletic Director’s Honor Roll
-2016-2017		Big 12 Commissioner’s Student-Athlete Honor Roll
-2016 			TEA Highest Ranking Graduate
-
-###VOLUNTEERING EXPERIENCE
-8/2017-Present	*Volunteer*, Austin State Supported Living Center, Austin TX
-•	Visit one on one with a mentally and physically disabled individual on a weekly basis; escort individual to activities such as church on Sundays and on-campus celebrations.
-•	Provided a voice for the residents to state legislatures.
-5-6/2018, 2019	*Instructor’s Assistant*, UT Summer Statistics Institute (SSI), Austin, TX
-•	For two summers, served as an aide to Drs. Kristin Harvey and Jennifer Miller in the Introduction to Statistics and Introduction to GIS week-long courses offered through the SSI at UT. 
-•	Handled attendance, course supplies, technology/software issues, and certificates.
-8/2017-2018		*Medical Volunteer*, Austin Pets Alive, Austin, TX
-•	Assisted veterinarians in the administration of medicine to dogs and cats in the aftermath of Hurricane Harvey; logged daily intake and output to track wellness.
-8/2017-2018		*Volunteer*, Matthews Elementary School, Austin, TX
-•	Tutored students (1st and 2nd grade) with the lowest literacy levels.
-
-###SKILLS
-Project Management, Time Management, Effective Communication
-*Statistical Software:* R, Excel, MATLAB
-*Programing Languages:* Python, C, Fortran (95, 2003)
-*Screening Software:* PyMol, GOLD
-
-###REFERENCES
-Dr. Josh Beckham, PhD.
-Research Educator, UT Austin			
-Email: josh.beckham@austin.utexas.edu
-Phone: (512) 471-5022
-
-Sally Ragsdale, M.A.					
-Associate Professor of Instruction, UT Austin	
-Email:	sally.ragsdale@austin.utexas.edu
-Phone: (512) 232-1040
-
-Nathaniel Woodward, PhD.	
-Associate Professor of Instruction, UT Austin
-Email: nathaniel.raley@utexas.edu
-Phone: (214) 686-8709
-
+(/resume)
