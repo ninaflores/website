@@ -23,10 +23,7 @@ theme = "hugo-sustain"
   Github        = "ninaflores"
   Email         = "nina.m.flores@icloud.com"
   Twitter       = "ninaflores4"
-  Instagram    = "nina_flores"
-  Stackoverflow = "username"
-  Medium        = "username"
-  Telegram      = "username"
+  
 
 ## Main Menu
 [[menu.main]]
