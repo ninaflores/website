@@ -43,4 +43,4 @@ theme = "hugo-sustain"
   name = "vitae"
   identifier = "vitae"
   weight = 300
-  url = "/vitae/"
+  url = "https://ninamflores.net/Nina_Flores_CV.pdf"
