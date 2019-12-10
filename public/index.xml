@@ -53,26 +53,28 @@ We&#39;ll start with creating a new site with a very basic template.</descriptio
     
     <item>
       <title></title>
-      <link>/resume/</link>
+      <link>/vitae.fld/header/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>/resume/</guid>
-      <description>Nina M. Flores nina.m.flores@icloud.com 817.789.5900 Austin, TX
-EDUCATION UNIVERSITY OF TEXAS
-Austin, TX Bachelor of Science in Computational Biology May 2020 Certificate in Scientific Computation and Data Sciences College of Natural Sciences Overall GPA: 3.91/4.00
- RESEARCH EXPERIENCE 9/2019-Current | Research Assistant/Data Analyst, African American Resilience in Context Lab, University | of Texas Department of Human Development and Family Sciences, Austin, TX | Advisor: Dr.Fatima Varner | Collaborate with PI to create personal project of conducting randomization, MANOVA, | regression, and logistic regression tests on relationships of interest.</description>
+      <guid>/vitae.fld/header/</guid>
+      <description>
+
+
+
+PAGE 
+&amp;nbsp;
+PAGE 1
+&amp;nbsp;
+</description>
     </item>
     
     <item>
       <title></title>
-      <link>/resume1/</link>
+      <link>/vitae/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>/resume1/</guid>
-      <description>Nina M. Flores nina.m.flores@icloud.com 817.789.5900 Austin, TX
-EDUCATION UNIVERSITY OF TEXAS
-Austin, TX Bachelor of Science in Computational Biology May 2020 Certificate in Scientific Computation and Data Sciences College of Natural Sciences Overall GPA: 3.91/4.00
- RESEARCH EXPERIENCE 9/2019-Current | Research Assistant/Data Analyst, African American Resilience in Context Lab, University | of Texas Department of Human Development and Family Sciences, Austin, TX | Advisor: Dr.Fatima Varner | Collaborate with PI to create personal project of conducting randomization, MANOVA, | regression, and logistic regression tests on relationships of interest.</description>
+      <guid>/vitae/</guid>
+      <description>ninanator1010@gmail.comninanator1010@gmail.com262019-12-10T21:00:00Z2019-12-10T21:00:00Z187950134111588116.00CleanCleanfalsefalsefalsefalseEN-USX-NONEX-NONE/* Style Definitions */table.MsoNormalTable{mso-style-name:&#34;Table Normal&#34;;mso-tstyle-rowband-size:0;mso-tstyle-colband-size:0;mso-style-noshow:yes;mso-style-priority:99;mso-style-parent:&#34;&#34;;mso-padding-alt:0in 5.4pt 0in 5.</description>
     </item>
     
     <item>
@@ -90,9 +92,9 @@ Austin, TX Bachelor of Science in Computational Biology May 2020 Certificate in 
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>/projects/</guid>
-      <description> Projects Project 1 An Exploratory Data Analysis on IMDb movie data for all the movie lovers like me.
-Project 2 Statistical Modeling of K-12 school based marginialization targeting topics of child discrimination, problem behaviors, and demographics.
- </description>
+      <description>Here are some projects I have been working on:
+Project 1 An Exploratory Data Analysis on IMDb movie data for all the movie lovers like me.
+Project 2 Statistical Modeling of K-12 school based marginialization targeting topics of child discrimination, problem behaviors, and demographics.</description>
     </item>
     
   </channel>

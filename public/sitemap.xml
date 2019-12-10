@@ -73,12 +73,12 @@
   </url>
   
   <url>
-    <loc>/resume/</loc>
+    <loc>/vitae.fld/header/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>/resume1/</loc>
+    <loc>/vitae/</loc>
     <priority>0</priority>
   </url>
   
@@ -88,6 +88,10 @@
   
   <url>
     <loc>/projects/</loc>
+  </url>
+  
+  <url>
+    <loc>/vitae.fld/</loc>
   </url>
   
 </urlset>
