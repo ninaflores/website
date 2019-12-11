@@ -1,0 +1,3 @@
+"0","library(sandwich)"
+"0","fitbpi %>% ggplot(aes(cdisc_centered, totbpi)) + geom_point() + geom_smooth(method = ""lm"","
+"0","se = F)+ggtitle(""Total Behavior Problem Index Score vs. Child Discrimination"")+ylab(""Total Behavior Problem Index Score"")+ xlab(""Child Discrimination (centered)"")"

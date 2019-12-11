@@ -1,6 +1,10 @@
 {
-    "path" : "~/Desktop/website/content",
+    "path" : "~/Desktop/website/content/blog",
     "sortOrder" : [
+        {
+            "ascending" : false,
+            "columnIndex" : 4
+        },
         {
             "ascending" : true,
             "columnIndex" : 2

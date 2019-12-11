@@ -1,0 +1,4 @@
+"0","logit <- predict(fitbpi, response = ""logit"")"
+"0","surveybpi <- surveybpi %>%drop_na(totbpi)"
+"0","surveybpi$BPI_Category <- ifelse(surveybpi$totbpi > mean(surveybpi$totbpi), ""above mean"", ""below mean"")"
+"0","ggplot(surveybpi,aes(x= logit,fill=BPI_Category))+geom_density(alpha=.75)+ ggtitle(""Prediction Model"")"

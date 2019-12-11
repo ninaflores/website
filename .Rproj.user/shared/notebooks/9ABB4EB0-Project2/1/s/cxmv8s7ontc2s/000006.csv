@@ -1,0 +1,1 @@
+"0","fitbpi %>% ggplot(aes(cdisc_centered, totbpi)) + geom_smooth(method= ""lm"", aes(color= SCHCOMP), se= F) +ggtitle(""Total Behavior Problem Index Score vs. Child Discrimination"") +labs(color = ""School Composition"") +ylab(""Total Behavior Problem Index Score"")+ xlab(""Child Discrimination (centered)"")"

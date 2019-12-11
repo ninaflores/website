@@ -1,0 +1,20 @@
+{
+    "collab_server" : "",
+    "contents" : "{{ partial \"head\" . }}\n  <body>\n    <div id=\"wrap\">\n\n      <!-- Header -->\n      {{ partial \"header\" . }}\n      {{ if isset .Params \"showpagemeta\" }}\n        {{ .Render \"projects\" }}\n      {{ else }}\n      <div class=\"container\">\n        <div class=\"blog-post\">\n          <h3>\n            <strong><a href=\"{{ .Permalink }}\">{{ .Title }}</a></strong>\n          </h3>\n        </div>\n        <div class=\"blog-title\">\n          <h4>\n          {{ .Date.Format \"January 2, 2006\" }}\n            &nbsp;&nbsp;\n            {{ range .Params.tags }}\n            <span class=\"label label-success\">{{ . }}</span>\n            {{ end }}\n          </h4>\n        </div>\n        <div class=\"panel panel-default\">\n          <div class=\"panel-body\">\n            <div class=\"blogpost\">\n              {{ .Content }}\n              <hr>\n              <div class=\"related-posts\">\n                <h5>Related Posts</h5>\n                {{ range first 3 ( where ( where .Site.Pages.ByDate.Reverse \".Params.tags\" \"intersect\" .Params.tags ) \"Permalink\" \"!=\" .Permalink ) }}\n                  <div class=\"row\">\n                    <div class=\"col-sm-4 col-md-4 col-lg-4\">\n                      <h6 style=\"text-align: right\">\n                        {{ .Date.Format \"January 2, 2006\" }}\n                      </h6>\n                    </div>\n                    <div class=\"col-sm-8 col-md-8 col-lg-8\">\n                      <h6 style=\"text-align: left\">\n                        <strong><a href=\"{{ .RelPermalink }}\">{{ .Title | markdownify }}</a></strong>\n                      </h6>\n                    </div>\n                  </div>\n                {{ end }}\n              </div>\n            </div>\n          </div>\n          <hr>\n        {{ partial \"disqus\" . }}\n        </div>\n      </div>\n      {{ end }}\n    </div>\n\n    <!-- Footer -->\n    {{ partial \"footer\" . }}\n    \n  </body>\n</html>\n",
+    "created" : 1576014633557.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "655340449",
+    "id" : "6849B384",
+    "lastKnownWriteTime" : 1576029032,
+    "last_content_update" : 1576029074880,
+    "path" : "~/Desktop/website/themes/hugo-sustain/layouts/_default/single.html",
+    "project_path" : "themes/hugo-sustain/layouts/_default/single.html",
+    "properties" : {
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "html"
+}

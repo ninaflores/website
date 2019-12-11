@@ -66,7 +66,7 @@ surveydata %>% group_by(recodedgpa) %>% drop_na(pdisc,cdisc,TOTIVP,TOTRCON,totbp
 I was interested in exploring how several variables differ among the children with different grade point averages. Here, the mean income, personal discrimination of the parent, child discrimination, involved vigilant parenting, racial concerns and behavior problem index scores are separated by GPA classifications where the lowest group is from 2-2.5, the next group is 2.5-3, then 3-3.5 and finally 3.5-4.
 
 
-
+#Manova
 ```{r}
 library(mvnormtest)
 
@@ -141,7 +141,7 @@ check %>% ggplot(aes(recodedgpa,totbpi,fill=recodedgpa))+geom_bar(stat="summary"
  
 
 check %>% ggplot(aes(recodedgpa,cdisc,fill=recodedgpa))+geom_bar(stat="summary")+
-  geom_errorbar(stat="summary") +coord_flip()+ylab("cdisc score")+theme(legend.position = "none")
+  geom_errorbar(stat="summary") +coord_flip()+ylab("Child Discrimination Score (1-5)")+xlab("GPA Group")+theme(legend.position = "none")+ggtitle("Child Discrimination Score by GPA Grouping")
  
 ```
 Null Hypothesis:  For the ten measures, means of each GPA grouping are equal.
@@ -152,10 +152,10 @@ In order to test whether the mean income, personal discrimination of the parent,
 Post hoc analysis was performed, conducting pairwise comparisons to determine which GPA groups differed in  'totbpi', and 'cdisc'. After adjusting for multiple comparisons (bonferroni), due to the type 1 error rate of 0.9515055, the total bpi still significantly differed between the 2.0- 2.5 group to the 3.0-3.5 and 3.5-4.0 groups and the 2.5-3.0 group significantly differed from the 3.0-3.5 and 3.5-4.0 groups as well. 
 
 The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc. 
-
+#Randomization Test
 ```{r}
 
-#Randomization Test
+
 #Do mothers or fathers experience more racial discrimination?
 #Male = 1, Female = 2
 Mother <- surveydata %>% filter(PA_GEN == 2)
@@ -183,7 +183,7 @@ for (i in 1:5000) {
 
 #create the histogram of the distribution with our test statistic
 {
-  hist(rand_distribution, main = "", ylab = "")
+  hist(rand_distribution, main = "Random Distribution of Parent Discrimination", ylab = "Count")
   abline(v =-0.2335992, col = "red")
 }
 
@@ -204,7 +204,7 @@ Assumptions for the independent t-test were violated, so we use randomization.
 The actual mean difference between the groups was found to be -0.2335992 (when subtracting fathers from mothers). After running the randomization test, a p-value of.0308 was found and can be visualized by the two red lines on the distibution above. Since the p-value is less than our alpha of .05, we can conclude that there is a significant difference in the amount of personal discrimination that mothers and fathers face. Fathers face significantly more discrimination when compared to mothers. 
 
 
-
+# Linear Regression Modeling the Effects of Discrimination and School Composition on the Problem Behaviors Index
 ```{r}
 surveydata <- surveydata
 surveydata$SCHCOMP <- factor(surveydata$SCHCOMP)
@@ -244,7 +244,7 @@ abline(h = 0, col = "red")
 
 ```{r}
 
-fitbpi %>% ggplot(aes(cdisc_centered, totbpi)) + geom_smooth(method= "lm", aes(color= SCHCOMP), se= F) 
+fitbpi %>% ggplot(aes(cdisc_centered, totbpi)) + geom_smooth(method= "lm", aes(color= SCHCOMP), se= F) +ggtitle("Total Behavior Problem Index Score vs. Child Discrimination") +labs(color = "School Composition") +ylab("Total Behavior Problem Index Score")+ xlab("Child Discrimination (centered)")
 
 
 
@@ -256,7 +256,8 @@ In this plot, a school composition that was almost all black (1) is shown with t
 ```{r}
 library(sandwich)
 fitbpi %>% ggplot(aes(cdisc_centered, totbpi)) + geom_point() + geom_smooth(method = "lm",
-se = F) #seems to be fanning out
+se = F)+ggtitle("Total Behavior Problem Index Score vs. Child Discrimination")+ylab("Total Behavior Problem Index Score")+ xlab("Child Discrimination (centered)")
+ #seems to be fanning out
 
 
 bptest(fitbpi) #fails homoskedasity, need to recompute with robust errors
@@ -289,6 +290,7 @@ samp_distn %>% t %>% as.data.frame %>% summarize_all(sd)
 The bootstrapped standard errors are almost identical to, but slightly smaller than those from both tests above.
 
 
+# Logistic Regression Modeling the Effects of Discrimination and School Composition on the Problem Behaviors Index
 ```{r}
 surveydata$SCHCOMP <- factor(surveydata$SCHCOMP)
 surveydata$MARSTAT <- factor(surveydata$MARSTAT)
@@ -347,10 +349,10 @@ The confusion matrix shows that the model does a better job of classifying negat
 logit <- predict(fitbpi, response = "logit")
 
 surveybpi <- surveybpi %>%drop_na(totbpi)
-surveybpi$bpi_Cat <- ifelse(surveybpi$totbpi > mean(surveybpi$totbpi), "above mean", "below mean")
+surveybpi$BPI_Category <- ifelse(surveybpi$totbpi > mean(surveybpi$totbpi), "above mean", "below mean")
 
 
-ggplot(surveybpi,aes(x= logit,fill=bpi_Cat))+geom_density(alpha=.75)
+ggplot(surveybpi,aes(x= logit,fill=BPI_Category))+geom_density(alpha=.75)+ ggtitle("Prediction Model")
 
 ```
 This graph is a visualization of what the model is predicting in each category. Everything that is being predicted as above the mean is shown in pink. Everything being categorized as below the mean is shown in blue. Everything in grey has been miscategorized. To the right of 0, gray is proportion of below the mean that we predicted above it (false positives). To the left of 0, gray is proportion of above the mean that we predicted below it (false negatives).
@@ -360,7 +362,7 @@ This graph is a visualization of what the model is predicting in each category. 
 
 ```{r}
 
-ROCplot <- ggplot(surveybpi) + geom_roc(aes(d = totbpi, m = prob), n.cuts = 0)
+ROCplot <- ggplot(surveybpi) + geom_roc(aes(d = totbpi, m = prob), n.cuts = 0) +ggtitle("Receiver Operating Characteristic Curve")
 ROCplot
 calc_auc(ROCplot)
 
@@ -370,6 +372,7 @@ This graph is the ROC (receiver operating characteristic) curve of our model. Th
 
 
 
+# Cross Validation on Model of the Effects of Discrimination and School Composition on the Problem Behaviors Index
 ```{r}
 
 set.seed(1234)
@@ -409,6 +412,7 @@ A 10-fold cross validation was performed to test model's ability to predict new 
 
 
 
+# Lasso Regression on the Problem Behaviors Index
 ```{r}
 library(glmnet) 
 surveydata$SCHCOMP <- factor(surveydata$SCHCOMP)
@@ -483,7 +487,7 @@ After running a lasso-regression, the coefficients that are non-zero for predict
 
 
 
-
+# Linear Regression Modeling of the Effects of the Highest Level of Education Received by Each Parent on Total Household Income
 ```{r}
 
 
@@ -504,6 +508,7 @@ exp(coeftest(fitinc))
 
 ```
 
+# Logistic Regression Modeling of the Effects of the Highest Level of Education Received by Each Parent on Total Household Income
 ```{r}
 Income$prob <- predict(fitinc, type = "response")
 table(predict = as.numeric(Income$prob > 0.5), truth = Income$recodedincome) %>%
@@ -513,13 +518,13 @@ class_diag(Income$prob, truth = Income$recodedincome)
 logit <- predict(fitinc, response = "logit")
 
 Income <- Income %>%drop_na(recodedincome)
-Income$Income_Cat <- ifelse(Income$recodedincome > mean(Income$recodedincome), "above mean", "below mean")
+Income$Income_Category <- ifelse(Income$recodedincome > mean(Income$recodedincome), "above mean", "below mean")
 
 
-ggplot(Income,aes(x= logit,fill=Income_Cat))+geom_density(alpha=.75)
+ggplot(Income,aes(x= logit,fill=Income_Category))+geom_density(alpha=.75)+ ggtitle("Prediction Model")
 
 
-ROCplot <- ggplot(Income) + geom_roc(aes(d = recodedincome, m = prob), n.cuts = 0)
+ROCplot <- ggplot(Income) + geom_roc(aes(d = recodedincome, m = prob), n.cuts = 0)+ggtitle("Receiver Operating Characteristic Curve")
 ROCplot
 calc_auc(ROCplot)
 
@@ -527,7 +532,7 @@ calc_auc(ROCplot)
 
 I was interested in seeing if I could predict whether a family would be expected to have an income above or below average, solely based on the education levels of the mother and father. These factors alone had an accuracy of 0.7201946, a sensitivity of 0.6486486, a specificity of 0.7787611	, a precision of 0.7058824, and an AUC of 0.7912102.  The AUC represents the probability that a randomly selected parent with a higher than average income has a higher prediction than a randomly selected parent with a lower than average avaerage. So,with an AUC of 0.7912102, this model is performing well. The intercept shows that the reference group of parents who did not complete junior high have and odds of .0000001319 of making an income above the average. However, when both parents have doctoral degrees, the odds of them making above an average income are 32,627,353 times the odds of parents who did not finish junior high.
 
-
+# Cross Validation on Model of the Effects of the Highest Level of Education Received by Each Parent on Total Household Income
 ```{r}
 
 set.seed(1234)
@@ -557,7 +562,7 @@ apply(diags,2,mean) #average across all k results
 ```
 The logistic regression for the model with out of sample data. The results from this cross validation are lower than the values from above with an accuracy of 0.7153891, a sensitiviy of 0.6397746, a specificity of 0.7784177, a precision of 0.7080453 and an AUC of 0.0.7588930. This is likely due to the high number of categories that the parents could fall into in education (9 categories each). This model is doing a decent job of catergorizing household incomes as either above or below the mean based on education levels, but in the next step, removing some of these excess variables should help remove the noise that the model was picking up on.
 
-
+# Lasso Regression on Total Household Income
 ```{r}
 
 
@@ -631,7 +636,7 @@ apply(diags,2,mean) #average across all k results
 ```
 By running the lasso regression, the model is better overall. The accuracy is 0.7438655, the sensitivity is 0.7349330, the specificity is 0.7436869, the precision is 0.7202001, and the AUC is now 0.8169085. The only variables with non-zero coefficients for this lasso regression were: if the parent is currently married, if the parent graduated HS, if the parent dropped out of college before an associate's degree, if the parent obtained their associate's degree, if the parent obtained a doctoral degree, if the partner dropped out of HS, if the partner finished HS, if the partner obtained their bachelor's degree, some graduate school, and obtained their master's degree. One point of interest is that for the PA_EDU, obtaining a bachelor's degree was not significant when compared to the others and for the PART_EDU, obtaining a bachelor's degree was significant, but its coefficient was still very small. This emphasizes how obtaining a bachelor's degree is no longer a super strong indicator of income, and instead in most cases it takes graduate level education to achieve higher levels of income. 
 
-
+#Lasso Regression on GPA
 ```{r}
 
 
