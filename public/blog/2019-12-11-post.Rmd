@@ -18,7 +18,7 @@ opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, f
 <p style="color:#1e6330">Every time I tell people that my major is computational biology, I'm met with blank stares as I attempt to answer their questions about this field. So, for my first post, I'll actually *show* everyone some of what compuational biologists do.</p> 
 
 #About
-<p style="color:#1e6330">In my Computational Biology and Bioinformatics course (SDS348), we dove into topics of data visualization, probability functions, data manipulation and wrangling, matrices, distances, associations, clustering, PCA, hypothesis testing, simulation, ANOVA, MANOVA, PERMANOVA, linear regression, logistic regression, binary classification, cross validation and regularization. All in just 16 short weeks! We spend about 70% of our time working in R, but my favorite part of the course was seeing how easily every topic we learned about was used in Python.</p>
+<p style="color:#1e6330">In my Computational Biology and Bioinformatics course (SDS348), we dove into topics of data visualization, probability functions, data manipulation and wrangling, matrices, distances, associations, clustering, PCA, hypothesis testing, simulation, ANOVA, MANOVA, PERMANOVA, linear regression, logistic regression, binary classification, cross validation and regularization. All in just 16 short weeks! We spent about 70% of our time working in R, but my favorite part of the course was seeing how easily every topic we learned about was transferable to Python.</p>
 
 #Medical Applications
 <p style="color:#1e6330">In this course, we actually immersed ourselves in the biological applications of both R and Python. For example, in R: we could use data in order to predict a tumor's malignancy.</p> 
