@@ -120,7 +120,7 @@ coeftest(fit)</code></pre>
 <pre><code>##   (Intercept) marg_adhesion 
 ##    0.04393515    2.62689515</code></pre>
 <p style="color:#1e6330">
-Here, I generated a logistic regression with marginal adhesion as the explanatory variable and benign/malignancy as the response. This is telling us that every 1 unit increase in marginal adhesion, the odds of malignancy by 2.62689515. So, for a person with marginal adhesion = 10, we get log odds of -3.125040 + 0.965803 * 10 = 6.53299, or and odds of e^(6.53299) which is 687.4506 for malignancy.
+Here, I generated a logistic regression with marginal adhesion as the explanatory variable and benign/malignancy as the response. This is telling us that every 1 unit increase in marginal adhesion, the odds of malignancy are multiplied by a factor of 2.62689515. So, for a person with marginal adhesion = 10, we get log odds of -3.125040 + 0.965803 * 10 = 6.53299, or and odds of e^(6.53299) which is 687.4506 for malignancy.
 </p>
 <p style="color:#1e6330">
 We can even add in multiple variables into the model. For example, say we have a patient whose marginal adhesion is 3 and clump thickness of their tumor is 8, we could plug them into the following model to predict if their tumor is malignant:
