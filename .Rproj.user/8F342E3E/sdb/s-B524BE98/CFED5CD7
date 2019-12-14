@@ -1,14 +1,14 @@
 {
     "collab_server" : "",
-    "contents" : "blogdown::serve_site()\n\n",
+    "contents" : "blogdown::serve_site()\n\n\n",
     "created" : 1575566020566.000,
     "dirty" : true,
     "encoding" : "",
     "folds" : "",
-    "hash" : "3093323228",
+    "hash" : "3171612721",
     "id" : "CFED5CD7",
     "lastKnownWriteTime" : 1575499749,
-    "last_content_update" : 1575572935479,
+    "last_content_update" : 1576295749181,
     "path" : null,
     "project_path" : null,
     "properties" : {

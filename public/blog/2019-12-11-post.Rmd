@@ -1,0 +1,113 @@
+---
+title: What's Been Up in SDS348
+author: Nina Flores
+date: '2019-12-11'
+slug: post
+categories: []
+tags: []
+description: 'A General Breakdown of all things R and Python Stuffed into 16 Weeks'
+---
+
+
+```{r global_options, include=FALSE}
+library(knitr)
+opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, fig.width=8, tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
+
+Every time I tell people that my major is computational biology--I'm met with blank stares and even I, myself, don't know the best way to answer such a question. I usually say something like "ah just think about bio but with math and computer applications". So, I think for my first post, it is most appropriate to actually -show- everyone some of what compuational biologists do. 
+
+#About
+In SDS348, or "Computational Biology and Bioinformatics", we dove into topics of: Data visualization, Probability functions, Manipulation/Wrangling, Matrices, Distances, Associations, Clustering, PCA, Hypothesis Testing, Simulation, ANOVA, MANOVA, PERMANOVA, Linear Regression, Logistic Regression, Binary Classification, Cross Validation and Regularization. All in just 16 short weeks! We spend about 70% of our time working in R, but my favorite part of the course was seeing how easily every topic we learned was translated into Python. In the upcoming years, this course is going to be renamed "Data Analytics in R and Python," and I couldn't think of a name more appropriate for such a course.  
+
+
+#
+In this course, we actually immersed ourselves in the biological applications of both R and Python. For example, in R: we could use data in order to predict a tumor's malignancy. 
+
+```{r}
+
+library(dplyr)
+library(MASS)
+library(ggplot2)
+library(lmtest)
+data<-biopsy%>%transmute(clump_thickness=V1,
+ cell_uniformity=V2,
+ marg_adhesion=V4,
+ bland_chromatin=V7,
+ outcome=class,
+ y=as.numeric(outcome)-1)
+head(data)
+
+```
+
+This is the -biopsy- dataset from Rstudio which included  attributes of tumors recorded for 699 patients and whether they were  malignant (1) or benign (0). For example, if we wanted to use the marginal adhesion score of tumors to predict its malignancy, we could do something like this:
+
+```{r}
+fit<-glm(y~marg_adhesion,data=data,family=binomial(link="logit"))
+coeftest(fit)
+exp(coef(fit))
+
+```
+  Here, we generated a logistic regression with marginal adhesion as the explanatory variable and benign/malignancy as the response. This is telling us that every 1 unit increase in marginal adhesion, the odds of malignancy by 2.62689515. 
+  So, for a person with marginal adhesion = 10 we get a log odds of -3.125040 + 0.965803 * 10 = 6.53299, or and odds of e^(6.53299) which is 687.4506 for malignancy. 
+
+  We can even add in multiple variables into the model. For example, say we have a patient whose marginal adhesion is 3 and clump thickness of their tumor is 8, we could plug them into the following model to predict if their tumor is malignant:
+```{r}
+
+fit2<-glm(y~clump_thickness+marg_adhesion, family="binomial", data=data)
+coeftest(fit2)
+
+patient1<-data.frame(clump_thickness=8,
+ marg_adhesion=3)
+
+predict(fit2, newdata=patient1,type = "response")
+
+```
+  You would have to tell the patient the unfortuate news that they have a 90.1% predicted probability of malignancy.
+
+#Another Biological Application
+  If you find predicting tumor malignancies a bit depressing, perhaps you'll find predicting sequence alignments as more of your cup of tea. To accomplish this, we used the Needleman-Wunsch algorithm in python. We could define two sequences, and based from theirs scorings, we can find a possible alignment. 
+```{python}
+seq1 = "CCAGT"
+seq2 = "ACAAGT"
+
+def match_fun(a,b): # Helper function to define match/mismatch scores
+ if a==b:
+  score=1 #match score
+ else:
+  score=-1 #mismatch score
+ return score
+
+def needleman(seq1,seq2,gap_penalty=-1): # Needleman-Wunsch algorithm in a funct
+ m=len(seq1) #length of horizontal sequence
+ n=len(seq2) #length of vertical sequence
+ score=np.empty(shape=[n+1,m+1]) #array to hold scores
+ for j in range(0, m + 1): score[0][j] = gap_penalty * j
+ for i in range(0, n + 1): score[i][0] = gap_penalty * i
+ for i in range(1, n + 1):
+  for j in range(1, m + 1):
+    insert = score[i - 1][j] + gap_penalty
+    delete = score[i][j - 1] + gap_penalty
+    match = score[i - 1][j - 1] + match_fun(seq1[j-1], seq2[i-1])
+    score[i][j] = max(match, delete, insert)
+ return score
+
+import numpy as np
+needleman(seq1,seq2)
+```
+
+By staring at the top left corner, and choosing a path which yields the highest score, the predicted alignments ended up being:
+##CCA-GT
+##ACAAGT
+
+These types of biological applications were something that I dealt with daily in my Practical Computational Biology Course (BIO321G). In this course, we were tasked with predicting the secondary structure of RNA from its sequence. One of the first and most important steps of this project was to obtain an accurate sequence alignment. Here's and example of an amplified version of what I just did:
+
+![The sequence alignment for the Transfer RNA (tRNA) Glutamine by helices in Jalview. The blue arrows outline the matching helices.](/blog/compbioexample.png)
+
+Similar to above, an algorithm--in this case, comparative analysis of RNA, was used to successfully align 1,186 alignments to the reference sequence was 75 base pairs long. The regions that the blue arrows match actually form the stems of tRNA and this method of prediction helped establish the cloverleaf structure of tRNA, that I was able to also construct, from this sequence alignment. This predicted (and correct) secondary structure of Glutamine can be seen below!
+
+![](/blog/Glutamineforcompbio.png)
+
+So, I think the main take away from this is that prediction is an integral aspect of biology-- and I think that this just continually feeds my love of statistics and is precisely the reason why computational biology is the right choice for me.
+
+

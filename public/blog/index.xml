@@ -6,31 +6,19 @@
     <description>Recent content in Blogs on Nina Flores</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Thu, 23 Jul 2015 21:13:14 -0500</lastBuildDate>
+    <lastBuildDate>Wed, 11 Dec 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/blog/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Hello R Markdown</title>
-      <link>/blog/2015-07-23-r-rmarkdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <title>What&#39;s Been Up in SDS348</title>
+      <link>/blog/post/</link>
+      <pubDate>Wed, 11 Dec 2019 00:00:00 +0000</pubDate>
       
-      <guid>/blog/2015-07-23-r-rmarkdown/</guid>
-      <description>Link to project 1
-R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.</description>
-    </item>
-    
-    <item>
-      <title>Creating a New Theme</title>
-      <link>/blog/creating-a-new-theme/</link>
-      <pubDate>Sun, 28 Sep 2014 00:00:00 +0000</pubDate>
-      
-      <guid>/blog/creating-a-new-theme/</guid>
-      <description>Introduction This tutorial will show you how to create a simple theme in Hugo. I assume that you are familiar with HTML, the bash command line, and that you are comfortable using Markdown to format content. I&#39;ll explain how Hugo uses templates and how you can organize your templates to create a theme. I won&#39;t cover using CSS to style your theme.
-We&#39;ll start with creating a new site with a very basic template.</description>
+      <guid>/blog/post/</guid>
+      <description>Every time I tell people that my major is computational biology–I’m met with blank stares and even I, myself, don’t know the best way to answer such a question. I usually say something like “ah just think about bio but with math and computer applications”. So, I think for my first post, it is most appropriate to actually -show- everyone some of what compuational biologists do.
+About In SDS348, or “Computational Biology and Bioinformatics”, we dove into topics of: Data visualization, Probability functions, Manipulation/Wrangling, Matrices, Distances, Associations, Clustering, PCA, Hypothesis Testing, Simulation, ANOVA, MANOVA, PERMANOVA, Linear Regression, Logistic Regression, Binary Classification, Cross Validation and Regularization.</description>
     </item>
     
   </channel>

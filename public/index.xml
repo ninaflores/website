@@ -6,10 +6,20 @@
     <description>Recent content on Nina Flores</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-US</language>
-    <lastBuildDate>Sun, 20 Oct 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 11 Dec 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>What&#39;s Been Up in SDS348</title>
+      <link>/blog/post/</link>
+      <pubDate>Wed, 11 Dec 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/blog/post/</guid>
+      <description>Every time I tell people that my major is computational biology–I’m met with blank stares and even I, myself, don’t know the best way to answer such a question. I usually say something like “ah just think about bio but with math and computer applications”. So, I think for my first post, it is most appropriate to actually -show- everyone some of what compuational biologists do.
+About In SDS348, or “Computational Biology and Bioinformatics”, we dove into topics of: Data visualization, Probability functions, Manipulation/Wrangling, Matrices, Distances, Associations, Clustering, PCA, Hypothesis Testing, Simulation, ANOVA, MANOVA, PERMANOVA, Linear Regression, Logistic Regression, Binary Classification, Cross Validation and Regularization.</description>
+    </item>
     
     <item>
       <title>EDA Project</title>
@@ -18,15 +28,6 @@
       
       <guid>/project1/</guid>
       <description>I obtained two datasets containing information about recent movies. As an avid movie goer, who is a proud AMC A-list member and an alumni of Moviepass (may it rest in peace), I was interested in seeing the relationships between various movie production companies, actors, budgets, genres, and success in the box office. Both datasets were obtained from kaggle (movies from Daniel Grijalva and IMDb from PrompCloud). The IMDb dataset contains information from 2006-2016 for the 1,000 most popular movies and 12 variables including rank, title, genre, description, actors, year, runtime, votes, rating, revenue, and metascore.</description>
-    </item>
-    
-    <item>
-      <title>Projects</title>
-      <link>/projects/</link>
-      <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
-      
-      <guid>/projects/</guid>
-      <description></description>
     </item>
     
     <item>
@@ -44,11 +45,10 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>/projects/</guid>
-      <description>Here are some projects I have been working on:
-Data Wrangling and Exploratory Analysis:
-An Exploratory Data Analysis on IMDb movie data for all the movie lovers like me.
-Modeling, Inference, Prediction:
-Statistical Modeling of K-12 school based marginialization targeting topics of child discrimination, problem behaviors, and demographics.</description>
+      <description> Here are some projects I have been working on:
+ Data Wrangling and Exploratory Analysis: An Exploratory Data Analysis on IMDb movie data for all the movie lovers like me.
+  Modeling, Inference, Prediction: Statistical Modeling of K-12 school based marginialization targeting topics of child discrimination, problem behaviors, and demographics.
+ </description>
     </item>
     
   </channel>

@@ -1,6 +1,5 @@
 ---
 title: "Projects"
-date: ""
 output: html_document
 
 ---
@@ -11,8 +10,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Here are some projects I have been working on:
 
-[Data Wrangling and Exploratory Analysis:](/Project1)  
-An Exploratory Data Analysis on IMDb movie data for all the movie lovers like me.
 
-[Modeling, Inference, Prediction:](/Project2)  
-Statistical Modeling of K-12 school based marginialization targeting topics of child discrimination, problem behaviors, and demographics.
+> ### [Data Wrangling and Exploratory Analysis:](/Project1)  
+>    An Exploratory Data Analysis on IMDb movie data for all the movie lovers like me.
+
+> ### [Modeling, Inference, Prediction:](/Project2)  
+> Statistical Modeling of K-12 school based marginialization targeting topics of child discrimination, problem behaviors, and demographics.

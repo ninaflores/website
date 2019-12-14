@@ -1,0 +1,26 @@
+"0","seq1 = ""CCAGT""
+seq2 = ""ACAAGT""
+
+def match_fun(a,b): # Helper function to define match/mismatch scores
+ if a==b:
+  score=1 #match score
+ else:
+  score=-1 #mismatch score
+ return score
+
+def needleman(seq1,seq2,gap_penalty=-1): # Needleman-Wunsch algorithm in a funct
+ m=len(seq1) #length of horizontal sequence
+ n=len(seq2) #length of vertical sequence
+ score=np.empty(shape=[n+1,m+1]) #array to hold scores
+ for j in range(0, m + 1): score[0][j] = gap_penalty * j
+ for i in range(0, n + 1): score[i][0] = gap_penalty * i
+ for i in range(1, n + 1):
+  for j in range(1, m + 1):
+    insert = score[i - 1][j] + gap_penalty
+    delete = score[i][j - 1] + gap_penalty
+    match = score[i - 1][j - 1] + match_fun(seq1[j-1], seq2[i-1])
+    score[i][j] = max(match, delete, insert)
+ return score
+
+import numpy as np
+needleman(seq1,seq2)"
