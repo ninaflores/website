@@ -17,8 +17,7 @@
       <pubDate>Wed, 11 Dec 2019 00:00:00 +0000</pubDate>
       
       <guid>/blog/post/</guid>
-      <description>Every time I tell people that my major is computational biology–I’m met with blank stares and even I, myself, don’t know the best way to answer such a question. I usually say something like “ah just think about bio but with math and computer applications”. So, I think for my first post, it is most appropriate to actually -show- everyone some of what compuational biologists do.
-About In SDS348, or “Computational Biology and Bioinformatics”, we dove into topics of: Data visualization, Probability functions, Manipulation/Wrangling, Matrices, Distances, Associations, Clustering, PCA, Hypothesis Testing, Simulation, ANOVA, MANOVA, PERMANOVA, Linear Regression, Logistic Regression, Binary Classification, Cross Validation and Regularization.</description>
+      <description>Every time I tell people that my major is computational biology, I’m met with blank stares as I attempt to answer their questions about this field. So, for my first post, I’ll actually show everyone some of what compuational biologists do. About In my Computational Biology and Bioinformatics course (SDS348), we dove into topics of data visualization, probability functions, data manipulation and wrangling, matrices, distances, associations, clustering, PCA, hypothesis testing, simulation, ANOVA, MANOVA, PERMANOVA, linear regression, logistic regression, binary classification, cross validation and regularization.</description>
     </item>
     
   </channel>
