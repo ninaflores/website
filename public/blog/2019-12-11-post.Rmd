@@ -15,13 +15,13 @@ opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, f
 ```
 
 
-<p style="color:#1e6330">Every time I tell people that my major is computational biology, I'm met with blank stares as I attempt to answer their questions about this field. So, for my first post, I'll actually *show* everyone some of what compuational biologists do.</p> 
+<p style="color:#333f48">Every time I tell people that my major is computational biology, I'm met with blank stares as I attempt to answer their questions about this field. So, for my first post, I'll actually *show* everyone some of what compuational biologists do.</p> 
 
 #About
-<p style="color:#1e6330">In my Computational Biology and Bioinformatics course (SDS348), we dove into topics of data visualization, probability functions, data manipulation and wrangling, matrices, distances, associations, clustering, PCA, hypothesis testing, simulation, ANOVA, MANOVA, PERMANOVA, linear regression, logistic regression, binary classification, cross validation and regularization. All in just 16 short weeks! We spent about 70% of our time working in R, but my favorite part of the course was seeing how easily every topic we learned about was transferable to Python.</p>
+<p style="color:#333f48">In my Computational Biology and Bioinformatics course (SDS348), we dove into topics of data visualization, probability functions, data manipulation and wrangling, matrices, distances, associations, clustering, PCA, hypothesis testing, simulation, ANOVA, MANOVA, PERMANOVA, linear regression, logistic regression, binary classification, cross validation and regularization. All in just 16 short weeks! We spent about 70% of our time working in R, but my favorite part of the course was seeing how easily every topic we learned about was transferable to Python.</p>
 
 #Medical Applications
-<p style="color:#1e6330">In this course, we actually immersed ourselves in the biological applications of both R and Python. For example, in R: we could use data in order to predict a tumor's malignancy.</p> 
+<p style="color:#333f48">In this course, we actually immersed ourselves in the biological applications of both R and Python. For example, in R: we could use data in order to predict a tumor's malignancy.</p> 
 
 ```{r}
 
@@ -39,7 +39,7 @@ head(data)
 
 ```
 
-<p style="color:#1e6330">This is the **biopsy** dataset from Rstudio, which includes attributes of tumors recorded for 699 patients and whether they were malignant (1) or benign (0). For example, if we wanted to use the marginal adhesion score of tumors to predict its malignancy, we could do something like this:</p>
+<p style="color:#333f48">This is the **biopsy** dataset from Rstudio, which includes attributes of tumors recorded for 699 patients and whether they were malignant (1) or benign (0). For example, if we wanted to use the marginal adhesion score of tumors to predict its malignancy, we could do something like this:</p>
 
 ```{r}
 fit<-glm(y~marg_adhesion,data=data,family=binomial(link="logit"))
@@ -47,10 +47,10 @@ coeftest(fit)
 exp(coef(fit))
 
 ```
-  <p style="color:#1e6330">Here, I generated a logistic regression with marginal adhesion as the explanatory variable and benign/malignancy as the response. This is telling us that every 1 unit increase in marginal adhesion, the odds of malignancy are multiplied by a factor of 2.62689515. 
+  <p style="color:##333f48">Here, I generated a logistic regression with marginal adhesion as the explanatory variable and benign/malignancy as the response. This is telling us that every 1 unit increase in marginal adhesion, the odds of malignancy are multiplied by a factor of 2.62689515. 
   So, for a person with marginal adhesion = 10, we get log odds of -3.125040 + 0.965803 * 10 = 6.53299, or and odds of e^(6.53299) which is 687.4506 for malignancy.</p> 
 
-  <p style="color:#1e6330">We can even add in multiple variables into the model. For example, say we have a patient whose marginal adhesion is 3 and clump thickness of their tumor is 8, we could plug them into the following model to predict if their tumor is malignant:</p>
+  <p style="color:#333f48">We can even add in multiple variables into the model. For example, say we have a patient whose marginal adhesion is 3 and clump thickness of their tumor is 8, we could plug them into the following model to predict if their tumor is malignant:</p>
 ```{r}
 
 fit2<-glm(y~clump_thickness+marg_adhesion, family="binomial", data=data)
@@ -62,10 +62,10 @@ patient1<-data.frame(clump_thickness=8,
 predict(fit2, newdata=patient1,type = "response")
 
 ```
-  <p style="color:#1e6330">You would have to tell the patient the unfortuate news that they have a 90.1% predicted probability of malignancy.</p>
+  <p style="color:#333f48">You would have to tell the patient the unfortuate news that they have a 90.1% predicted probability of malignancy.</p>
 
 #Another Biological Application
-  <p style="color:#1e6330">If you find predicting tumor malignancies a bit depressing, perhaps you'll find predicting sequence alignments as more of your cup of tea. To accomplish this, I used the Needleman-Wunsch algorithm in python. I defined two sequences, and based from theirs scorings, I found a possible alignment.</p>
+  <p style="color:#333f48">If you find predicting tumor malignancies a bit depressing, perhaps you'll find predicting sequence alignments as more of your cup of tea. To accomplish this, I used the Needleman-Wunsch algorithm in python. I defined two sequences, and based from theirs scorings, I found a possible alignment.</p>
 ```{python}
 seq1 = "CCAGT"
 seq2 = "ACAAGT"
@@ -95,19 +95,19 @@ import numpy as np
 needleman(seq1,seq2)
 ```
 
- <p style="color:#1e6330">By starting at the top left corner, and choosing a path which yields the highest score, the predicted alignments ended up being:</p>
+ <p style="color:#333f48">By starting at the top left corner, and choosing a path which yields the highest score, the predicted alignments ended up being:</p>
 ##CCA-GT
 ##ACAAGT
 
-<p style="color:#1e6330">These types of biological applications were something that I dealt with daily in my Practical Computational Biology course (BIO321G). In this course, we were tasked with predicting the secondary structure of RNA from its sequence. One of the first and most important steps of this project was to obtain an accurate sequence alignment. Here's an example of an extended version of what I just did:</p>
+<p style="color:#333f48">These types of biological applications were something that I dealt with daily in my Practical Computational Biology course (BIO321G). In this course, we were tasked with predicting the secondary structure of RNA from its sequence. One of the first and most important steps of this project was to obtain an accurate sequence alignment. Here's an example of an extended version of what I just did:</p>
 
 ![The sequence alignment for the Transfer RNA (tRNA) Glutamine by helices in Jalview. The blue arrows outline the matching helices.](/blog/compbioexample.png)
 
-<p style="color:#1e6330">Similar to above, an algorithm, which in this case is a comparative analysis of RNA, was used to successfully align 1,186 alignments to the reference sequence was 75 base pairs long. The regions that the blue arrows match actually form the stems of tRNA and this method of prediction helped establish the cloverleaf structure of tRNA, that I was able to also construct, from this sequence alignment. This predicted (and correct) secondary structure of Glutamine can be seen below!</p>
+<p style="color:#333f48">Similar to above, an algorithm, which in this case is a comparative analysis of RNA, was used to successfully align 1,186 alignments to the reference sequence was 75 base pairs long. The regions that the blue arrows match actually form the stems of tRNA and this method of prediction helped establish the cloverleaf structure of tRNA, that I was able to also construct, from this sequence alignment. This predicted (and correct) secondary structure of Glutamine can be seen below!</p>
 
 ![](/blog/Glutamineforcompbio.png)
 
-<p style="color:#1e6330">So, the main takeaway from this is that prediction is an integral aspect of biology. This continually feeds my love of statistics, and is precisely the reason why I love computational biology.</p>
+<p style="color:#333f48">So, the main takeaway from this is that prediction is an integral aspect of biology. This continually feeds my love of statistics, and is precisely the reason why I love computational biology.</p>
 
 
 
