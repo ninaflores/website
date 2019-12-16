@@ -15,4 +15,4 @@ Here are some projects I have been working on:
 >    An Exploratory Data Analysis on IMDb movie data for all the movie lovers like me.
 
 > ### [Modeling, Inference, Prediction:](/Project2)  
-> Statistical Modeling of K-12 school based marginialization targeting topics of child discrimination, problem behaviors, and demographics.
+> Statistical Modeling of K-12 school-based marginalization targeting topics of child discrimination, problem behaviors, and demographics.

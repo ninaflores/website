@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1576381392481.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "9CCA909E",
+    "lastKnownWriteTime" : -1238822156196904954,
+    "last_content_update" : 1576381392481,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "363810F1",
+        "caption" : "X2015sharks",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=X2015sharks&cache_key=363810F1",
+        "displayedObservations" : 536,
+        "environment" : "",
+        "object" : "X2015sharks",
+        "preview" : 0,
+        "totalObservations" : 536,
+        "variables" : 57
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

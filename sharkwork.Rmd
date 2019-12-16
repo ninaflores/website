@@ -1,0 +1,53 @@
+---
+title: "Clean Sharks"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+sharks2015 <- X2015sharks
+sharks2016<-X2016shark
+
+sharks2016$`NUMBER OF SANDBAR MALES` <- as.numeric(sharks2016$`NUMBER OF SANDBAR MALES`)
+sharks2016$`NUMBER OF GALAPAGOS FEMALES` <- as.numeric(sharks2016$`NUMBER OF GALAPAGOS FEMALES`)
+sharks2016$`NUMBER OF TIGER MALES` <- as.numeric(sharks2016$`NUMBER OF TIGER MALES`)
+sharks2016$`NUMBER OF TIGER FEMALES` <- as.numeric(sharks2016$`NUMBER OF TIGER FEMALES`)
+
+testsharks <- full_join(sharks2015, sharks2016)
+
+testsharks
+
+```
+
+We now have 2015 and 2016 joined on common variables-- removed no variables. 
+
+2017 is going to take a bit of cleaning due to the New format used in line 672. I think it's easiest to just separate at that line and join these like they are separate datasets. 
+```{r}
+
+old <-X2017sharkoldformat
+new <- X2017sharknewformat
+new$`TOUR START TIME:` <- as.numeric(new$`TOUR START TIME:`)
+new$`CURRENT (0=NONE - 10=STRONG)` <- as.numeric(new$`CURRENT (0=NONE - 10=STRONG)`)
+old$`SHARKS` <- as.numeric(old$`SHARKS`)
+old$`NUMBER OF GALAPAGOS FEMALES` <- as.numeric(old$`NUMBER OF GALAPAGOS FEMALES`)
+new$`NUMBER OF SANDBAR MALES` <- as.numeric(new$`NUMBER OF SANDBAR MALES`)
+new$`NUMBER OF SANDBAR FEMALES` <- as.numeric(new$`NUMBER OF SANDBAR FEMALES`)
+new$`NUMBER OF TIGER MALES` <- as.numeric(new$`NUMBER OF TIGER MALES`)
+new$`NUMBER OF TIGER FEMALES` <- as.numeric(new$`NUMBER OF TIGER FEMALES`)
+
+old$`BEHAVIOR` <- as.character(old$`BEHAVIOR`)
+
+
+
+full2017 <- full_join(old, new)
+
+```
+
+
+
+
+

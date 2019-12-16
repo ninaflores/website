@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "---\ntitle: \"Clean Sharks\"\noutput: html_document\n---\n\n```{r setup, include=FALSE}\nknitr::opts_chunk$set(echo = TRUE)\n```\n\n```{r}\n\nsharks2015 <- X2015sharks\nsharks2016<-X2016shark\n\nsharks2016$`NUMBER OF SANDBAR MALES` <- as.numeric(sharks2016$`NUMBER OF SANDBAR MALES`)\nsharks2016$`NUMBER OF GALAPAGOS FEMALES` <- as.numeric(sharks2016$`NUMBER OF GALAPAGOS FEMALES`)\nsharks2016$`NUMBER OF TIGER MALES` <- as.numeric(sharks2016$`NUMBER OF TIGER MALES`)\nsharks2016$`NUMBER OF TIGER FEMALES` <- as.numeric(sharks2016$`NUMBER OF TIGER FEMALES`)\n\ntestsharks <- full_join(sharks2015, sharks2016)\n\ntestsharks\n\n```\n\nWe now have 2015 and 2016 joined on common variables-- removed no variables. \n\n2017 is going to take a bit of cleaning due to the New format used in line 672. I think it's easiest to just separate at that line and join these like they are separate datasets. \n```{r}\n\nold <-X2017sharkoldformat\nnew <- X2017sharknewformat\nnew$`TOUR START TIME:` <- as.numeric(new$`TOUR START TIME:`)\nnew$`CURRENT (0=NONE - 10=STRONG)` <- as.numeric(new$`CURRENT (0=NONE - 10=STRONG)`)\nold$`SHARKS` <- as.numeric(old$`SHARKS`)\nold$`NUMBER OF GALAPAGOS FEMALES` <- as.numeric(old$`NUMBER OF GALAPAGOS FEMALES`)\nnew$`NUMBER OF SANDBAR MALES` <- as.numeric(new$`NUMBER OF SANDBAR MALES`)\nnew$`NUMBER OF SANDBAR FEMALES` <- as.numeric(new$`NUMBER OF SANDBAR FEMALES`)\nnew$`NUMBER OF TIGER MALES` <- as.numeric(new$`NUMBER OF TIGER MALES`)\nnew$`NUMBER OF TIGER FEMALES` <- as.numeric(new$`NUMBER OF TIGER FEMALES`)\n\nold$`BEHAVIOR` <- as.character(old$`BEHAVIOR`)\n\n\n\nfull2017 <- full_join(old, new)\n\n```\n\n\n\n\n\n",
+    "created" : 1576376848966.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "4153473741",
+    "id" : "D1877239",
+    "lastKnownWriteTime" : 1576512267,
+    "last_content_update" : 1576512267801,
+    "path" : "~/Desktop/website/sharkwork.Rmd",
+    "project_path" : "sharkwork.Rmd",
+    "properties" : {
+        "last_setup_crc32" : "",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

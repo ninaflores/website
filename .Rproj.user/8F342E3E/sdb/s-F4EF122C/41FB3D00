@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "---\ntitle: \"Projects\"\noutput: html_document\n\n---\n\n```{r setup, include=FALSE}\nknitr::opts_chunk$set(echo = TRUE)\n```\n\nHere are some projects I have been working on:\n\n\n> ### [Data Wrangling and Exploratory Analysis:](/Project1)  \n>    An Exploratory Data Analysis on IMDb movie data for all the movie lovers like me.\n\n> ### [Modeling, Inference, Prediction:](/Project2)  \n> Statistical Modeling of K-12 school-based marginalization targeting topics of child discrimination, problem behaviors, and demographics.\n",
+    "created" : 1576512360762.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3560678410",
+    "id" : "41FB3D00",
+    "lastKnownWriteTime" : 1576512455,
+    "last_content_update" : 1576512455757,
+    "path" : "~/Desktop/website/content/Projects.Rmd",
+    "project_path" : "content/Projects.Rmd",
+    "properties" : {
+        "tempName" : "Untitled2"
+    },
+    "relative_order" : 6,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
