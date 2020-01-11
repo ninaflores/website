@@ -67,7 +67,7 @@ I was interested in exploring how several variables differ among the children wi
 
 
 #Manova  
-*How does GPA vary among the measures of pdisc,cdisc,vicarious,TOTRCON, TOTIVP,  totbpi,recodedincome,RAC_SOC, CUL_SOC,and MMRI.*
+*How does GPA vary among the measures of pdisc,cdisc,vicarious,TOTRCON, TOTIVP,  totbpi,recodedincome,RAC_SOC, CUL_SOC,and MMRI?*  
 Null Hypothesis:  For the ten measures, means of each GPA grouping are equal.
 Alternative: For at least one dependent variable, at least one GPA grouping mean is different.
 
@@ -162,7 +162,7 @@ check %>% ggplot(aes(recodedgpa,cdisc,fill=recodedgpa))+geom_bar(stat="summary")
 
 The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc. 
 #Randomization Test  
-*Do mothers or fathers experience more racial discrimination?*
+*Do mothers or fathers experience more racial discrimination?*  
 ```{r}
 
 
