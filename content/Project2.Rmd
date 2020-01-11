@@ -12,7 +12,7 @@ library(knitr)
 opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, fig.width=8, tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 
-## Nina Flores, nmf538
+## Nina Flores
 
 
 
@@ -67,7 +67,7 @@ I was interested in exploring how several variables differ among the children wi
 
 
 #Manova  
-*How does GPA vary among the measures of pdisc,cdisc,vicarious,TOTRCON, TOTIVP,  totbpi,recodedincome,RAC_SOC, CUL_SOC,and MMRI?*  
+*How does GPA vary among the measures of pdisc, cdisc, vicarious, TOTRCON, TOTIVP,  totbpi, recodedincome, RAC_SOC, CUL_SOC, and MMRI?*  
 Null Hypothesis:  For the ten measures, means of each GPA grouping are equal.
 Alternative: For at least one dependent variable, at least one GPA grouping mean is different.
 
