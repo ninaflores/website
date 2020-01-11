@@ -1,0 +1,2 @@
+"0","check %>% ggplot(aes(recodedgpa,totbpi,fill=recodedgpa))+geom_bar(stat=""summary"")+"
+"0","  geom_errorbar(stat=""summary"") +coord_flip()+ylab(""total bpi score"")+theme(legend.position = ""none"")"

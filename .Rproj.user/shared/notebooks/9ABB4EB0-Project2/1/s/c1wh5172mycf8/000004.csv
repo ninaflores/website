@@ -1,0 +1,3 @@
+"0"," "
+"0","check %>% ggplot(aes(recodedgpa,cdisc,fill=recodedgpa))+geom_bar(stat=""summary"")+"
+"0","  geom_errorbar(stat=""summary"") +coord_flip()+ylab(""Child Discrimination Score (1-5)"")+xlab(""GPA Group"")+theme(legend.position = ""none"")+ggtitle(""Child Discrimination Score by GPA Grouping"")"

@@ -1,0 +1,4 @@
+"0","#Male = 1, Female = 2"
+"0","Mother <- surveydata %>% filter(PA_GEN == 2)"
+"0","Father<-surveydata %>% filter(PA_GEN == 1)"
+"0","hist(Mother$pdisc)"

@@ -66,7 +66,13 @@ surveydata %>% group_by(recodedgpa) %>% drop_na(pdisc,cdisc,TOTIVP,TOTRCON,totbp
 I was interested in exploring how several variables differ among the children with different grade point averages. Here, the mean income, personal discrimination of the parent, child discrimination, involved vigilant parenting, racial concerns and behavior problem index scores are separated by GPA classifications where the lowest group is from 2-2.5, the next group is 2.5-3, then 3-3.5 and finally 3.5-4.
 
 
-#Manova
+#Manova  
+*How does GPA vary among the measures of pdisc,cdisc,vicarious,TOTRCON, TOTIVP,  totbpi,recodedincome,RAC_SOC, CUL_SOC,and MMRI.*  
+Null Hypothesis:  For the ten measures, means of each GPA grouping are equal.
+Alternative: For at least one dependent variable, at least one GPA grouping mean is different.
+
+
+Before running the manova, I checked the appropriate assumption. Though multivariate normality assumptions and a failed equal variance assumption for cdisc failed, the test was still conducted. These will be limiatations to the results.
 ```{r}
 library(mvnormtest)
 
@@ -89,8 +95,9 @@ bartlett.test(check$TOTIVP, check$recodedgpa)
 bartlett.test(check$RAC_SOC, check$recodedgpa) 
 bartlett.test(check$CUL_SOC, check$recodedgpa) 
 bartlett.test(check$MMRI, check$recodedgpa) 
+```
 
-
+```{r}
 #manova
 
 
@@ -135,6 +142,13 @@ pairwise.t.test(surveydata$MMRI, surveydata$recodedgpa, p.adj = "none")
 
 #So we must use correction
 .05/59 #new alpha
+```
+
+In order to test whether the mean income, personal discrimination of the parent, child discrimination, vicarious discrimination, involved vigilant parenting, racial concerns, racial socialization scores, cultural socialization scores, racial identity score, and behavior problem index scores differ across GPA categories, I ran a multivariate analysis of variance, or MANOVA. The MANOVA found that these groups did significantly differ on the 10 measures (Pillai trace = 0.18118, F(1,491)=  10.665, p< 2.2e-16). Univariate analyses of variance (ANOVAs) for each  dependent variable were conducted as follow-up tests to the MANOVA, and using the Bonferroni method for controlling the Type I error, the univariate ANOVA for problem behaviors (F(1,491)=  86.041, p < 2.2e-16)) and child discrimination (F(1,491)=  13.703, p= 0.0002384)) were significant. 
+
+Post hoc analysis was performed, conducting pairwise comparisons to determine which GPA groups differed in  'totbpi', and 'cdisc'. After adjusting for multiple comparisons (bonferroni), due to the type 1 error rate of 0.9515055, the total bpi still significantly differed between the 2.0- 2.5 group to the 3.0-3.5 and 3.5-4.0 groups and the 2.5-3.0 group significantly differed from the 3.0-3.5 and 3.5-4.0 groups as well.
+
+```{r}
 
 check %>% ggplot(aes(recodedgpa,totbpi,fill=recodedgpa))+geom_bar(stat="summary")+
   geom_errorbar(stat="summary") +coord_flip()+ylab("total bpi score")+theme(legend.position = "none")
@@ -144,19 +158,15 @@ check %>% ggplot(aes(recodedgpa,cdisc,fill=recodedgpa))+geom_bar(stat="summary")
   geom_errorbar(stat="summary") +coord_flip()+ylab("Child Discrimination Score (1-5)")+xlab("GPA Group")+theme(legend.position = "none")+ggtitle("Child Discrimination Score by GPA Grouping")
  
 ```
-Null Hypothesis:  For the ten measures, means of each GPA grouping are equal.
-Alternative: For at least one dependent variable, at least one GPA grouping mean is different.
 
-In order to test whether the mean income, personal discrimination of the parent, child discrimination, vicarious discrimination, involved vigilant parenting, racial concerns, racial socialization scores, cultural socialization scores, racial identity score, and behavior problem index scores differ across GPA categories, I ran a multivariate analysis of variance, or MANOVA. The MANOVA found that these groups did significantly differ on the 10 measures (Pillai trace = 0.18118, F(1,491)=  10.665, p< 2.2e-16). Univariate analyses of variance (ANOVAs) for each  dependent variable were conducted as follow-up tests to the MANOVA, and using the Bonferroni method for controlling the Type I error, the univariate ANOVA for problem behaviors (F(1,491)=  86.041, p < 2.2e-16)) and child discrimination (F(1,491)=  13.703, p= 0.0002384)) were significant. 
-
-Post hoc analysis was performed, conducting pairwise comparisons to determine which GPA groups differed in  'totbpi', and 'cdisc'. After adjusting for multiple comparisons (bonferroni), due to the type 1 error rate of 0.9515055, the total bpi still significantly differed between the 2.0- 2.5 group to the 3.0-3.5 and 3.5-4.0 groups and the 2.5-3.0 group significantly differed from the 3.0-3.5 and 3.5-4.0 groups as well. 
 
 The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc. 
-#Randomization Test
+#Randomization Test  
+*Do mothers or fathers experience more racial discrimination?*  
 ```{r}
 
 
-#Do mothers or fathers experience more racial discrimination?
+
 #Male = 1, Female = 2
 Mother <- surveydata %>% filter(PA_GEN == 2)
 Father<-surveydata %>% filter(PA_GEN == 1)
@@ -197,7 +207,7 @@ t.test(pdisc~PA_GEN, data = surveydata)
 
 
 ```
-Do mothers or fathers experience more personal discrimination on average?
+
 Null Hypothesis: There is no difference in the average rate of personal discrimination based on gender.
 Alternative Hypothesis: Mothers and fathers receive different amounts of personal discrimination on average.
 Assumptions for the independent t-test were violated, so we use randomization. 
@@ -406,7 +416,7 @@ apply(diags,2,mean) #average across all k results
 
 
 ```
-A 10-fold cross validation was performed to test model's ability to predict new data that was not used to estimate it. The values are very similar to those before, but are slightly more conservative. The accuracy is now 0.7213010, the sensitivity is 0.4375142, the specificity is 0.8736509, the precision is 0.6571054, and the AUC is 0.7308493. The AUC is slightly lower with the new data, but it is still very similar to the in-sample data. So, a child's school composition and experiences of discrimination are decent predictors of their bpi. 
+A 10-fold cross validation was performed to test model's ability to predict new data that was not used to estimate it. The values are very similar to those before, but are slightly more conservative. The accuracy is now 0.7192177 , the sensitivity is 0.4476838, the specificity is 0.8770594, the precision is 0.6569188, and the AUC is 0.7438930. The AUC is slightly lower with the new data, but it is still very similar to the in-sample data. So, a child's school composition and experiences of discrimination are decent predictors of their bpi. 
 
 
 
@@ -482,7 +492,7 @@ apply(diags,2,mean) #average across all k results
 
 ```
 
-After running a lasso-regression, the coefficients that are non-zero for predicting whether a person has higher or lower than average bpi score are PART_EDU4 (partner's highest education level is some college),  MMRI (racial identity score), pdisc, cdisc_centered, and recodedgpa. Plugging in these variables into a cross validation improves the results of our model, and it is doing a pretty good job of predicting which bpi category a child falls in. The accuracy is 0.7499390, sensitivity (true positive rate) is 0.5577210, specificity (true negative rate) is 0.8659588, precision (postitive predictive value) is 0.7140565 and the area under the curve is 0.8007965.
+After running a lasso-regression, the coefficients that are non-zero for predicting whether a person has higher or lower than average bpi score are PART_EDU4 (partner's highest education level is some college),  MMRI (racial identity score), pdisc, cdisc_centered, and recodedgpa. Plugging in these variables into a cross validation improves the results of our model, and it is doing a pretty good job of predicting which bpi category a child falls in. The accuracy is 0.7475610, sensitivity (true positive rate) is 0.5417262, specificity (true negative rate) is 0.8697802, precision (postitive predictive value) is 0.6909499 and the area under the curve is 0.7928296.
 
 
 
@@ -560,7 +570,7 @@ apply(diags,2,mean) #average across all k results
 
 
 ```
-The logistic regression for the model with out of sample data. The results from this cross validation are lower than the values from above with an accuracy of 0.7153891, a sensitiviy of 0.6397746, a specificity of 0.7784177, a precision of 0.7080453 and an AUC of 0.0.7588930. This is likely due to the high number of categories that the parents could fall into in education (9 categories each). This model is doing a decent job of catergorizing household incomes as either above or below the mean based on education levels, but in the next step, removing some of these excess variables should help remove the noise that the model was picking up on.
+The logistic regression for the model with out of sample data. The results from this cross validation are lower than the values from above with an accuracy of 0.7150407, a sensitiviy of 0.6479708, a specificity of 0.7769169, a precision of 0.7001519 and an AUC of 0.7593288. This is likely due to the high number of categories that the parents could fall into in education (9 categories each). This model is doing a decent job of catergorizing household incomes as either above or below the mean based on education levels, but in the next step, removing some of these excess variables should help remove the noise that the model was picking up on.
 
 # Lasso Regression on Total Household Income
 ```{r}
@@ -634,7 +644,7 @@ apply(diags,2,mean) #average across all k results
 
 
 ```
-By running the lasso regression, the model is better overall. The accuracy is 0.7438655, the sensitivity is 0.7349330, the specificity is 0.7436869, the precision is 0.7202001, and the AUC is now 0.8169085. The only variables with non-zero coefficients for this lasso regression were: if the parent is currently married, if the parent graduated HS, if the parent dropped out of college before an associate's degree, if the parent obtained their associate's degree, if the parent obtained a doctoral degree, if the partner dropped out of HS, if the partner finished HS, if the partner obtained their bachelor's degree, some graduate school, and obtained their master's degree. One point of interest is that for the PA_EDU, obtaining a bachelor's degree was not significant when compared to the others and for the PART_EDU, obtaining a bachelor's degree was significant, but its coefficient was still very small. This emphasizes how obtaining a bachelor's degree is no longer a super strong indicator of income, and instead in most cases it takes graduate level education to achieve higher levels of income. 
+By running the lasso regression, the model is better overall. The accuracy is 0.7501681, the sensitivity is 0.7521280, the specificity is 0.7519153, the precision is 0.7350177, and the AUC is now 0.8256999. The only variables with non-zero coefficients for this lasso regression were: if the parent is currently married, if the parent graduated HS, if the parent dropped out of college before an associate's degree, if the parent obtained their associate's degree, if the parent obtained a doctoral degree, if the partner dropped out of HS, if the partner finished HS, if the partner obtained their bachelor's degree, some graduate school, and obtained their master's degree. One point of interest is that for the PA_EDU, obtaining a bachelor's degree was not significant when compared to the others and for the PART_EDU, obtaining a bachelor's degree was significant, but its coefficient was still very small. This emphasizes how obtaining a bachelor's degree is no longer a super strong indicator of income, and instead in most cases it takes graduate level education to achieve higher levels of income. 
 
 #Lasso Regression on GPA
 ```{r}

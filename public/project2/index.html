@@ -133,6 +133,8 @@ surveydata %&gt;% group_by(recodedgpa) %&gt;% drop_na(pdisc, cdisc,
 </div>
 <div id="manova" class="section level1">
 <h1>Manova</h1>
+<p><em>How does GPA vary among the measures of pdisc,cdisc,vicarious,TOTRCON, TOTIVP, totbpi,recodedincome,RAC_SOC, CUL_SOC,and MMRI.</em> Null Hypothesis: For the ten measures, means of each GPA grouping are equal. Alternative: For at least one dependent variable, at least one GPA grouping mean is different.</p>
+<p>Before running the manova, I checked the appropriate assumption. Though multivariate normality assumptions and a failed equal variance assumption for cdisc failed, the test was still conducted. These will be limiatations to the results.</p>
 <pre class="r"><code>library(mvnormtest)
 
 # Normality-- fails this assumption.
@@ -400,28 +402,28 @@ pairwise.t.test(surveydata$pdisc, surveydata$recodedgpa, p.adj = &quot;none&quot
 <pre class="r"><code># So we must use correction
 0.05/59  #new alpha</code></pre>
 <pre><code>## [1] 0.0008474576</code></pre>
+<p>In order to test whether the mean income, personal discrimination of the parent, child discrimination, vicarious discrimination, involved vigilant parenting, racial concerns, racial socialization scores, cultural socialization scores, racial identity score, and behavior problem index scores differ across GPA categories, I ran a multivariate analysis of variance, or MANOVA. The MANOVA found that these groups did significantly differ on the 10 measures (Pillai trace = 0.18118, F(1,491)= 10.665, p&lt; 2.2e-16). Univariate analyses of variance (ANOVAs) for each dependent variable were conducted as follow-up tests to the MANOVA, and using the Bonferroni method for controlling the Type I error, the univariate ANOVA for problem behaviors (F(1,491)= 86.041, p &lt; 2.2e-16)) and child discrimination (F(1,491)= 13.703, p= 0.0002384)) were significant.</p>
+<p>Post hoc analysis was performed, conducting pairwise comparisons to determine which GPA groups differed in ‘totbpi’, and ‘cdisc’. After adjusting for multiple comparisons (bonferroni), due to the type 1 error rate of 0.9515055, the total bpi still significantly differed between the 2.0- 2.5 group to the 3.0-3.5 and 3.5-4.0 groups and the 2.5-3.0 group significantly differed from the 3.0-3.5 and 3.5-4.0 groups as well.</p>
 <pre class="r"><code>check %&gt;% ggplot(aes(recodedgpa, totbpi, fill = recodedgpa)) + 
     geom_bar(stat = &quot;summary&quot;) + geom_errorbar(stat = &quot;summary&quot;) + 
     coord_flip() + ylab(&quot;total bpi score&quot;) + theme(legend.position = &quot;none&quot;)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-2-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>check %&gt;% ggplot(aes(recodedgpa, cdisc, fill = recodedgpa)) + 
     geom_bar(stat = &quot;summary&quot;) + geom_errorbar(stat = &quot;summary&quot;) + 
     coord_flip() + ylab(&quot;Child Discrimination Score (1-5)&quot;) + 
     xlab(&quot;GPA Group&quot;) + theme(legend.position = &quot;none&quot;) + ggtitle(&quot;Child Discrimination Score by GPA Grouping&quot;)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-2-2.png" width="768" style="display: block; margin: auto;" /> Null Hypothesis: For the ten measures, means of each GPA grouping are equal. Alternative: For at least one dependent variable, at least one GPA grouping mean is different.</p>
-<p>In order to test whether the mean income, personal discrimination of the parent, child discrimination, vicarious discrimination, involved vigilant parenting, racial concerns, racial socialization scores, cultural socialization scores, racial identity score, and behavior problem index scores differ across GPA categories, I ran a multivariate analysis of variance, or MANOVA. The MANOVA found that these groups did significantly differ on the 10 measures (Pillai trace = 0.18118, F(1,491)= 10.665, p&lt; 2.2e-16). Univariate analyses of variance (ANOVAs) for each dependent variable were conducted as follow-up tests to the MANOVA, and using the Bonferroni method for controlling the Type I error, the univariate ANOVA for problem behaviors (F(1,491)= 86.041, p &lt; 2.2e-16)) and child discrimination (F(1,491)= 13.703, p= 0.0002384)) were significant.</p>
-<p>Post hoc analysis was performed, conducting pairwise comparisons to determine which GPA groups differed in ‘totbpi’, and ‘cdisc’. After adjusting for multiple comparisons (bonferroni), due to the type 1 error rate of 0.9515055, the total bpi still significantly differed between the 2.0- 2.5 group to the 3.0-3.5 and 3.5-4.0 groups and the 2.5-3.0 group significantly differed from the 3.0-3.5 and 3.5-4.0 groups as well.</p>
-<p>The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc. #Randomization Test</p>
-<pre class="r"><code># Do mothers or fathers experience more racial
-# discrimination? Male = 1, Female = 2
+<p><img src="/Project2_files/figure-html/unnamed-chunk-4-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p>The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc. #Randomization Test<br />
+<em>Do mothers or fathers experience more racial discrimination?</em></p>
+<pre class="r"><code># Male = 1, Female = 2
 Mother &lt;- surveydata %&gt;% filter(PA_GEN == 2)
 Father &lt;- surveydata %&gt;% filter(PA_GEN == 1)
 
 
 hist(Mother$pdisc)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-3-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>hist(Father$pdisc)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-3-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-5-2.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code># the group difference
 
 
@@ -445,7 +447,7 @@ for (i in 1:5000) {
         ylab = &quot;Count&quot;)
     abline(v = -0.2335992, col = &quot;red&quot;)
 }</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-3-3.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-5-3.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>mean(rand_distribution &gt; abs(-0.2335992)) * 2  #pvalue &lt; alpha, significant</code></pre>
 <pre><code>## [1] 0.0272</code></pre>
 <pre class="r"><code># comparison to ttest
@@ -461,7 +463,7 @@ t.test(pdisc ~ PA_GEN, data = surveydata)</code></pre>
 ## sample estimates:
 ## mean in group 1 mean in group 2 
 ##        2.765894        2.517761</code></pre>
-<p>Do mothers or fathers experience more personal discrimination on average? Null Hypothesis: There is no difference in the average rate of personal discrimination based on gender. Alternative Hypothesis: Mothers and fathers receive different amounts of personal discrimination on average. Assumptions for the independent t-test were violated, so we use randomization. The actual mean difference between the groups was found to be -0.2335992 (when subtracting fathers from mothers). After running the randomization test, a p-value of.0308 was found and can be visualized by the two red lines on the distibution above. Since the p-value is less than our alpha of .05, we can conclude that there is a significant difference in the amount of personal discrimination that mothers and fathers face. Fathers face significantly more discrimination when compared to mothers.</p>
+<p>Null Hypothesis: There is no difference in the average rate of personal discrimination based on gender. Alternative Hypothesis: Mothers and fathers receive different amounts of personal discrimination on average. Assumptions for the independent t-test were violated, so we use randomization. The actual mean difference between the groups was found to be -0.2335992 (when subtracting fathers from mothers). After running the randomization test, a p-value of.0308 was found and can be visualized by the two red lines on the distibution above. Since the p-value is less than our alpha of .05, we can conclude that there is a significant difference in the amount of personal discrimination that mothers and fathers face. Fathers face significantly more discrimination when compared to mothers.</p>
 </div>
 <div id="linear-regression-modeling-the-effects-of-discrimination-and-school-composition-on-the-problem-behaviors-index" class="section level1">
 <h1>Linear Regression Modeling the Effects of Discrimination and School Composition on the Problem Behaviors Index</h1>
@@ -503,28 +505,28 @@ summary(fitbpi)</code></pre>
 ## F-statistic:  19.6 on 9 and 479 DF,  p-value: &lt; 2.2e-16</code></pre>
 <pre class="r"><code># Confirm linearity of numeric predictors
 surveydata %&gt;% ggplot(aes(cdisc_centered, totbpi)) + geom_point()</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-4-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code># Confirm normality of residuals
 hist(fitbpi$residuals, main = &quot;Model Residuals&quot;, xlab = &quot;Residual&quot;, 
     col = &quot;light grey&quot;, right = F)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-4-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-2.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code># Confirm equal variance, seems to be fanning out
 plot(fitbpi$fitted.values, fitbpi$residuals, xlab = &quot;Fitted Values&quot;, 
     ylab = &quot;Residuals&quot;, main = &quot;Residual Plot&quot;, pch = 20)
 abline(h = 0, col = &quot;red&quot;)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-4-3.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-3.png" width="768" style="display: block; margin: auto;" /></p>
 <p>I was interested in what variables contribute to the scores of the behavior problem index in children. I created a linear regression model to see how much variation in bpi can be explained by the child’s school’s racial composition, as well as their exposure to discrimination. For a black child who receives an average amount of discrimination at a school that is almost all black, their estimated score for the behavior problem index is 12.3032. While holding school composition constant, the score on the bpi increases by 5.5176 for every 1 unit increase of discrimination the child receives. The school composition variable is on a scale of 1-5 where a score of 1 means the school is mostly black while 5 means the school is hardly black. With this scale in mind, while holding discrimination constant, a school that is mostly black has a decrease in bpi of 3.7842. While holding discrimination constant, a school that is about half black has a decrease in bpi of 4.3260. While holding discrimination constant, a school that has a few other black children has a decrease in bpi of 4.7530. Finally, while holding discrimination constant, a school that has almost no other black children has the largest decrease in bpi of at 5.5801. There is -3.2847 is a difference in slopes for the 4th category of school composition and cdisc. The interactions with each dependent variable on the x-axis are provided in order to help visualize these coefficients. This data however failed the linearity and equal variance assumptions, which is a limitation that will be adjusted for on future steps. This model explains 25.2% of the difference in total bpi. Therefore, discrimination and school composition do contribute to bpi scores, but there is still a large amount of the variation unaccounted for by this model.</p>
 <pre class="r"><code>fitbpi %&gt;% ggplot(aes(cdisc_centered, totbpi)) + geom_smooth(method = &quot;lm&quot;, 
     aes(color = SCHCOMP), se = F) + ggtitle(&quot;Total Behavior Problem Index Score vs. Child Discrimination&quot;) + 
     labs(color = &quot;School Composition&quot;) + ylab(&quot;Total Behavior Problem Index Score&quot;) + 
     xlab(&quot;Child Discrimination (centered)&quot;)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-5-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
 <p>In this plot, a school composition that was almost all black (1) is shown with the red line, a school that was mostly black (2) was shown by the yellow line, a school that was about half black (3) was shown in green, a school that has a few black students (4) was shown in blue, and a school with close to no other black students (5) is shown in purple. The graph illustrates that at every school, children who were exposed to more discrimination were likely to have a higher score for bpi. This plot also shows that as the schools become less black, the students likely have lower scores on the total behavior problem index. This was the opposite of what I originally expected to see, because I hypothesized that for the black students, a school with a greater number of people who look like them would have a postive impact on their bpi. This opposite effect is likely due to another variable we are not looking into, such as the school’s resources, which may be benefitting the black children even at a school where they are in the minority.</p>
 <pre class="r"><code>library(sandwich)
 fitbpi %&gt;% ggplot(aes(cdisc_centered, totbpi)) + geom_point() + 
     geom_smooth(method = &quot;lm&quot;, se = F) + ggtitle(&quot;Total Behavior Problem Index Score vs. Child Discrimination&quot;) + 
     ylab(&quot;Total Behavior Problem Index Score&quot;) + xlab(&quot;Child Discrimination (centered)&quot;)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-8-1.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code># seems to be fanning out
 
 
@@ -668,11 +670,11 @@ surveybpi$BPI_Category &lt;- ifelse(surveybpi$totbpi &gt; mean(surveybpi$totbpi)
 
 ggplot(surveybpi, aes(x = logit, fill = BPI_Category)) + geom_density(alpha = 0.75) + 
     ggtitle(&quot;Prediction Model&quot;)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-10-1.png" width="768" style="display: block; margin: auto;" /> This graph is a visualization of what the model is predicting in each category. Everything that is being predicted as above the mean is shown in pink. Everything being categorized as below the mean is shown in blue. Everything in grey has been miscategorized. To the right of 0, gray is proportion of below the mean that we predicted above it (false positives). To the left of 0, gray is proportion of above the mean that we predicted below it (false negatives).</p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-12-1.png" width="768" style="display: block; margin: auto;" /> This graph is a visualization of what the model is predicting in each category. Everything that is being predicted as above the mean is shown in pink. Everything being categorized as below the mean is shown in blue. Everything in grey has been miscategorized. To the right of 0, gray is proportion of below the mean that we predicted above it (false positives). To the left of 0, gray is proportion of above the mean that we predicted below it (false negatives).</p>
 <pre class="r"><code>ROCplot &lt;- ggplot(surveybpi) + geom_roc(aes(d = totbpi, m = prob), 
     n.cuts = 0) + ggtitle(&quot;Receiver Operating Characteristic Curve&quot;)
 ROCplot</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-11-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>calc_auc(ROCplot)</code></pre>
 <pre><code>##   PANEL group       AUC
 ## 1     1    -1 0.7630225</code></pre>
@@ -705,7 +707,7 @@ for (i in 1:k) {
 apply(diags, 2, mean)  #average across all k results</code></pre>
 <pre><code>##       acc      sens      spec       ppv       auc 
 ## 0.7192177 0.4476838 0.8770594 0.6569188 0.7438930</code></pre>
-<p>A 10-fold cross validation was performed to test model’s ability to predict new data that was not used to estimate it. The values are very similar to those before, but are slightly more conservative. The accuracy is now 0.7213010, the sensitivity is 0.4375142, the specificity is 0.8736509, the precision is 0.6571054, and the AUC is 0.7308493. The AUC is slightly lower with the new data, but it is still very similar to the in-sample data. So, a child’s school composition and experiences of discrimination are decent predictors of their bpi.</p>
+<p>A 10-fold cross validation was performed to test model’s ability to predict new data that was not used to estimate it. The values are very similar to those before, but are slightly more conservative. The accuracy is now 0.7192177 , the sensitivity is 0.4476838, the specificity is 0.8770594, the precision is 0.6569188, and the AUC is 0.7438930. The AUC is slightly lower with the new data, but it is still very similar to the in-sample data. So, a child’s school composition and experiences of discrimination are decent predictors of their bpi.</p>
 </div>
 <div id="lasso-regression-on-the-problem-behaviors-index" class="section level1">
 <h1>Lasso Regression on the Problem Behaviors Index</h1>
@@ -826,7 +828,7 @@ for (i in 1:k) {
 apply(diags, 2, mean)  #average across all k results</code></pre>
 <pre><code>##       acc      sens      spec       ppv       auc 
 ## 0.7475610 0.5417262 0.8697802 0.6909499 0.7928296</code></pre>
-<p>After running a lasso-regression, the coefficients that are non-zero for predicting whether a person has higher or lower than average bpi score are PART_EDU4 (partner’s highest education level is some college), MMRI (racial identity score), pdisc, cdisc_centered, and recodedgpa. Plugging in these variables into a cross validation improves the results of our model, and it is doing a pretty good job of predicting which bpi category a child falls in. The accuracy is 0.7499390, sensitivity (true positive rate) is 0.5577210, specificity (true negative rate) is 0.8659588, precision (postitive predictive value) is 0.7140565 and the area under the curve is 0.8007965.</p>
+<p>After running a lasso-regression, the coefficients that are non-zero for predicting whether a person has higher or lower than average bpi score are PART_EDU4 (partner’s highest education level is some college), MMRI (racial identity score), pdisc, cdisc_centered, and recodedgpa. Plugging in these variables into a cross validation improves the results of our model, and it is doing a pretty good job of predicting which bpi category a child falls in. The accuracy is 0.7475610, sensitivity (true positive rate) is 0.5417262, specificity (true negative rate) is 0.8697802, precision (postitive predictive value) is 0.6909499 and the area under the curve is 0.7928296.</p>
 </div>
 <div id="linear-regression-modeling-of-the-effects-of-the-highest-level-of-education-received-by-each-parent-on-total-household-income" class="section level1">
 <h1>Linear Regression Modeling of the Effects of the Highest Level of Education Received by Each Parent on Total Household Income</h1>
@@ -912,11 +914,11 @@ Income$Income_Category &lt;- ifelse(Income$recodedincome &gt; mean(Income$recode
 
 ggplot(Income, aes(x = logit, fill = Income_Category)) + geom_density(alpha = 0.75) + 
     ggtitle(&quot;Prediction Model&quot;)</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-15-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-17-1.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ROCplot &lt;- ggplot(Income) + geom_roc(aes(d = recodedincome, m = prob), 
     n.cuts = 0) + ggtitle(&quot;Receiver Operating Characteristic Curve&quot;)
 ROCplot</code></pre>
-<p><img src="/Project2_files/figure-html/unnamed-chunk-15-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-17-2.png" width="768" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>calc_auc(ROCplot)</code></pre>
 <pre><code>##   PANEL group       AUC
 ## 1     1    -1 0.7912102</code></pre>
@@ -949,7 +951,7 @@ for (i in 1:k) {
 apply(diags, 2, mean)  #average across all k results</code></pre>
 <pre><code>##       acc      sens      spec       ppv       auc 
 ## 0.7150407 0.6479708 0.7769169 0.7001519 0.7593288</code></pre>
-<p>The logistic regression for the model with out of sample data. The results from this cross validation are lower than the values from above with an accuracy of 0.7153891, a sensitiviy of 0.6397746, a specificity of 0.7784177, a precision of 0.7080453 and an AUC of 0.0.7588930. This is likely due to the high number of categories that the parents could fall into in education (9 categories each). This model is doing a decent job of catergorizing household incomes as either above or below the mean based on education levels, but in the next step, removing some of these excess variables should help remove the noise that the model was picking up on.</p>
+<p>The logistic regression for the model with out of sample data. The results from this cross validation are lower than the values from above with an accuracy of 0.7150407, a sensitiviy of 0.6479708, a specificity of 0.7769169, a precision of 0.7001519 and an AUC of 0.7593288. This is likely due to the high number of categories that the parents could fall into in education (9 categories each). This model is doing a decent job of catergorizing household incomes as either above or below the mean based on education levels, but in the next step, removing some of these excess variables should help remove the noise that the model was picking up on.</p>
 </div>
 <div id="lasso-regression-on-total-household-income" class="section level1">
 <h1>Lasso Regression on Total Household Income</h1>
@@ -1081,7 +1083,7 @@ for (i in 1:k) {
 apply(diags, 2, mean)  #average across all k results</code></pre>
 <pre><code>##       acc      sens      spec       ppv       auc 
 ## 0.7501681 0.7521280 0.7519153 0.7350177 0.8256999</code></pre>
-<p>By running the lasso regression, the model is better overall. The accuracy is 0.7438655, the sensitivity is 0.7349330, the specificity is 0.7436869, the precision is 0.7202001, and the AUC is now 0.8169085. The only variables with non-zero coefficients for this lasso regression were: if the parent is currently married, if the parent graduated HS, if the parent dropped out of college before an associate’s degree, if the parent obtained their associate’s degree, if the parent obtained a doctoral degree, if the partner dropped out of HS, if the partner finished HS, if the partner obtained their bachelor’s degree, some graduate school, and obtained their master’s degree. One point of interest is that for the PA_EDU, obtaining a bachelor’s degree was not significant when compared to the others and for the PART_EDU, obtaining a bachelor’s degree was significant, but its coefficient was still very small. This emphasizes how obtaining a bachelor’s degree is no longer a super strong indicator of income, and instead in most cases it takes graduate level education to achieve higher levels of income.</p>
+<p>By running the lasso regression, the model is better overall. The accuracy is 0.7501681, the sensitivity is 0.7521280, the specificity is 0.7519153, the precision is 0.7350177, and the AUC is now 0.8256999. The only variables with non-zero coefficients for this lasso regression were: if the parent is currently married, if the parent graduated HS, if the parent dropped out of college before an associate’s degree, if the parent obtained their associate’s degree, if the parent obtained a doctoral degree, if the partner dropped out of HS, if the partner finished HS, if the partner obtained their bachelor’s degree, some graduate school, and obtained their master’s degree. One point of interest is that for the PA_EDU, obtaining a bachelor’s degree was not significant when compared to the others and for the PART_EDU, obtaining a bachelor’s degree was significant, but its coefficient was still very small. This emphasizes how obtaining a bachelor’s degree is no longer a super strong indicator of income, and instead in most cases it takes graduate level education to achieve higher levels of income.</p>
 </div>
 <div id="lasso-regression-on-gpa" class="section level1">
 <h1>Lasso Regression on GPA</h1>
@@ -1201,7 +1203,7 @@ coef(lasso)</code></pre>
 ## [49] ellipsis_0.3.0   generics_0.0.2   vctrs_0.2.0      iterators_1.0.12
 ## [53] tools_3.6.1      glue_1.3.1       hms_0.5.1        yaml_2.2.0      
 ## [57] colorspace_1.4-1 rvest_0.3.4      haven_2.1.1</code></pre>
-<pre><code>## [1] &quot;2019-12-10 19:44:18 CST&quot;</code></pre>
+<pre><code>## [1] &quot;2020-01-11 17:33:29 CST&quot;</code></pre>
 <pre><code>##                                                                                            sysname 
 ##                                                                                           &quot;Darwin&quot; 
 ##                                                                                            release 
