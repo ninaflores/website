@@ -12,7 +12,7 @@ library(knitr)
 opts_chunk$set(fig.align="center", fig.height=5, message=FALSE, warning=FALSE, fig.width=8, tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 
-## Nina Flores
+
 
 
 
