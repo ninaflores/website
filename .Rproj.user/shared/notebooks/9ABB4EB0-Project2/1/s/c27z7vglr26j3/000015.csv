@@ -17,5 +17,5 @@
 "0","#create the histogram of the distribution with our test statistic"
 "0","{"
 "0","  hist(rand_distribution, main = ""Random Distribution of Parent Discrimination"", ylab = ""Count"")"
-"0","  abline(v =-0.2335992, col = ""red"")"
+"0","  abline(v =-0.2481328, col = ""red"")"
 "0","}"

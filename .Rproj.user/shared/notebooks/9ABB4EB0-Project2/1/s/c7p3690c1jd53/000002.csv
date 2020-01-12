@@ -1,2 +1,0 @@
-"0","ROCplot <- ggplot(surveybpi) + geom_roc(aes(d = totbpi, m = prob), n.cuts = 0) +ggtitle(""Receiver Operating Characteristic Curve"")"
-"0","ROCplot"

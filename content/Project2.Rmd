@@ -160,7 +160,7 @@ check %>% ggplot(aes(recodedgpa,cdisc,fill=recodedgpa))+geom_bar(stat="summary")
 ```
 
 
-The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc. 
+The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc.  
 #Randomization Test  
 *Do mothers or fathers experience more racial discrimination?*  
 ```{r}
@@ -194,10 +194,10 @@ for (i in 1:5000) {
 #create the histogram of the distribution with our test statistic
 {
   hist(rand_distribution, main = "Random Distribution of Parent Discrimination", ylab = "Count")
-  abline(v =-0.2335992, col = "red")
+  abline(v =-0.2481328, col = "red")
 }
 
-mean(rand_distribution > abs(-0.2335992)) * 2 #pvalue < alpha, significant
+mean(rand_distribution > abs(-0.2481328)) * 2 #pvalue < alpha, significant
 
 
 #comparison to ttest
@@ -211,7 +211,7 @@ t.test(pdisc~PA_GEN, data = surveydata)
 Null Hypothesis: There is no difference in the average rate of personal discrimination based on gender.
 Alternative Hypothesis: Mothers and fathers receive different amounts of personal discrimination on average.
 Assumptions for the independent t-test were violated, so we use randomization. 
-The actual mean difference between the groups was found to be -0.2335992 (when subtracting fathers from mothers). After running the randomization test, a p-value of.0308 was found and can be visualized by the two red lines on the distibution above. Since the p-value is less than our alpha of .05, we can conclude that there is a significant difference in the amount of personal discrimination that mothers and fathers face. Fathers face significantly more discrimination when compared to mothers. 
+The actual mean difference between the groups was found to be -0.2481328 (when subtracting fathers from mothers). After running the randomization test, a p-value of 0.0184 was found and can be visualized by the two red lines on the distibution above. Since the p-value is less than our alpha of .05, we can conclude that there is a significant difference in the amount of personal discrimination that mothers and fathers face. Fathers face significantly more discrimination when compared to mothers. 
 
 
 # Linear Regression Modeling the Effects of Discrimination and School Composition on the Problem Behaviors Index
@@ -377,8 +377,7 @@ ROCplot
 calc_auc(ROCplot)
 
 ```
-This graph is the ROC (receiver operating characteristic) curve of our model. The area under the curve (AUC) of 
-0.7630225	quantifies how well the model is predicting overall. Since ours is found in the range of .7-.8, it is doing a fair job.
+This graph is the ROC (receiver operating characteristic) curve of our model. The area under the curve (AUC) of 0.7630225	quantifies how well the model is predicting overall. Since ours is found in the range of .7-.8, it is doing a fair job.
 
 
 
@@ -474,7 +473,7 @@ for(i in 1:k){
   truth<-test$totbpi
   
   ## Train model on training set
-  fit<-glm(totbpi ~ PART_EDU4 + MMRI +pdisc + cdisc_centered+ recodedgpa, data = train, family = "binomial" )
+  fit<-glm(totbpi ~   MMRI +pdisc + cdisc_centered+ recodedgpa, data = train, family = "binomial" )
   probs<-predict(fit,newdata = test,type="response")
   ## Test model on test set (save all k results)
   diags<-rbind(diags,class_diag(probs,truth))
@@ -492,7 +491,7 @@ apply(diags,2,mean) #average across all k results
 
 ```
 
-After running a lasso-regression, the coefficients that are non-zero for predicting whether a person has higher or lower than average bpi score are PART_EDU4 (partner's highest education level is some college),  MMRI (racial identity score), pdisc, cdisc_centered, and recodedgpa. Plugging in these variables into a cross validation improves the results of our model, and it is doing a pretty good job of predicting which bpi category a child falls in. The accuracy is 0.7475610, sensitivity (true positive rate) is 0.5417262, specificity (true negative rate) is 0.8697802, precision (postitive predictive value) is 0.6909499 and the area under the curve is 0.7928296.
+After running a lasso-regression, the coefficients that are non-zero for predicting whether a person has higher or lower than average bpi score are PART_EDU4 (partner's highest education level is some college),  MMRI (racial identity score), pdisc, cdisc_centered, and recodedgpa. Plugging in these variables into a cross validation improves the results of our model, and it is doing a pretty good job of predicting which bpi category a child falls in. The accuracy is 0.7351220, sensitivity (true positive rate) is 0.4921522, specificity (true negative rate) is 0.8729487, precision (postitive predictive value) is 0.6701876 and the area under the curve is 0.7677292.
 
 
 
