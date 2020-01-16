@@ -411,9 +411,11 @@ pairwise.t.test(surveydata$pdisc, surveydata$recodedgpa, p.adj = &quot;none&quot
     coord_flip() + ylab(&quot;Child Discrimination Score (1-5)&quot;) + 
     xlab(&quot;GPA Group&quot;) + theme(legend.position = &quot;none&quot;) + ggtitle(&quot;Child Discrimination Score by GPA Grouping&quot;)</code></pre>
 <p><img src="/Project2_files/figure-html/unnamed-chunk-4-2.png" width="768" style="display: block; margin: auto;" /></p>
-<p>The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc.<br />
-#Randomization Test<br />
-<em>Do mothers or fathers experience more racial discrimination?</em></p>
+<p>The first graph illustrates the differences in bpi among the different GPA groupings, and the second illustates the difference in cdisc among the groupings. Limitations to these results include failed multivariate normality assumptions and a failed equal variance assumption for cdisc.</p>
+</div>
+<div id="randomization-test" class="section level1">
+<h1>Randomization Test</h1>
+<p><em>Do mothers or fathers experience more racial discrimination?</em></p>
 <pre class="r"><code># Male = 1, Female = 2
 Mother &lt;- surveydata %&gt;% filter(PA_GEN == 2)
 Father &lt;- surveydata %&gt;% filter(PA_GEN == 1)
@@ -1202,7 +1204,7 @@ coef(lasso)</code></pre>
 ## [49] ellipsis_0.3.0   generics_0.0.2   vctrs_0.2.0      iterators_1.0.12
 ## [53] tools_3.6.1      glue_1.3.1       hms_0.5.1        yaml_2.2.0      
 ## [57] colorspace_1.4-1 rvest_0.3.4      haven_2.1.1</code></pre>
-<pre><code>## [1] &quot;2020-01-12 13:04:14 CST&quot;</code></pre>
+<pre><code>## [1] &quot;2020-01-16 13:03:03 CST&quot;</code></pre>
 <pre><code>##                                                                                            sysname 
 ##                                                                                           &quot;Darwin&quot; 
 ##                                                                                            release 
@@ -1210,7 +1212,7 @@ coef(lasso)</code></pre>
 ##                                                                                            version 
 ## &quot;Darwin Kernel Version 19.0.0: Thu Oct 17 16:17:15 PDT 2019; root:xnu-6153.41.3~29/RELEASE_X86_64&quot; 
 ##                                                                                           nodename 
-##                                                                          &quot;Ninas-MacBook-Air.local&quot; 
+##                                                                           &quot;Ninas-Air.attlocal.net&quot; 
 ##                                                                                            machine 
 ##                                                                                           &quot;x86_64&quot; 
 ##                                                                                              login 
